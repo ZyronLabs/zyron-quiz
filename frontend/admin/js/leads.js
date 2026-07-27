@@ -1,17 +1,68 @@
-/* ========================================
-   LEADS SCRIPT
-   ======================================== */
-
+const API_URL = 'https://zyron-quiz.onrender.com/api';
 let leadsAtuais = [];
+
+// ===== FUNÇÕES AUXILIARES =====
+function getLeadNome(lead) {
+    if (lead.nome) return lead.nome;
+    if (lead.cliente && lead.cliente.nome) return lead.cliente.nome;
+    return 'N/A';
+}
+
+function getLeadEmpresa(lead) {
+    if (lead.empresa) return lead.empresa;
+    if (lead.cliente && lead.cliente.empresa) return lead.cliente.empresa;
+    return '';
+}
+
+function getLeadWhatsapp(lead) {
+    if (lead.whatsapp) return lead.whatsapp;
+    if (lead.cliente && lead.cliente.whatsapp) return lead.cliente.whatsapp;
+    return '';
+}
+
+function getLeadSegmento(lead) {
+    if (lead.segmento) return lead.segmento;
+    if (lead.cliente && lead.cliente.segmento) return lead.cliente.segmento;
+    return '';
+}
+
+function getLeadPontuacao(lead) {
+    if (lead.pontuacao_total !== undefined && lead.pontuacao_total !== null) return lead.pontuacao_total;
+    if (lead.diagnostico && lead.diagnostico.pontuacao_total !== undefined) return lead.diagnostico.pontuacao_total;
+    return 0;
+}
+
+function getLeadNivel(lead) {
+    if (lead.nivel) return lead.nivel;
+    if (lead.diagnostico && lead.diagnostico.nivel) return lead.diagnostico.nivel;
+    return 'N/A';
+}
+
+function getLeadNecessidades(lead) {
+    if (lead.necessidades) return lead.necessidades;
+    if (lead.diagnostico && lead.diagnostico.necessidades) return lead.diagnostico.necessidades;
+    return { dores: [], solucoes: [] };
+}
+
 const statusClasses = {
-    novo: 'status-novo',
-    contactado: 'status-contactado',
-    reuniao_marcada: 'status-reuniao',
-    proposta_enviada: 'status-proposta',
-    cliente: 'status-cliente',
-    perdido: 'status-perdido'
+    'novo': 'status-novo',
+    'contactado': 'status-contactado',
+    'reuniao_marcada': 'status-reuniao',
+    'proposta_enviada': 'status-proposta',
+    'cliente': 'status-cliente',
+    'perdido': 'status-perdido'
 };
 
+const statusLabels = {
+    'novo': '🟢 Novo',
+    'contactado': '🟡 Contactado',
+    'reuniao_marcada': '🟠 Reunião',
+    'proposta_enviada': '🟣 Proposta',
+    'cliente': '✅ Cliente',
+    'perdido': '❌ Perdido'
+};
+
+// ===== CARREGAR LEADS =====
 async function carregarLeads(filtros = {}) {
     try {
         const params = new URLSearchParams(filtros).toString();
@@ -25,6 +76,7 @@ async function carregarLeads(filtros = {}) {
     }
 }
 
+// ===== RENDERIZAR CARDS =====
 function renderizarLeads(leads) {
     const container = document.getElementById('leadsGrid');
     const no = document.getElementById('noLeads');
@@ -34,111 +86,113 @@ function renderizarLeads(leads) {
         return;
     }
     no.style.display = 'none';
-    const statusLabels = {
-        novo: '🟢 Novo',
-        contactado: '🟡 Contactado',
-        reuniao_marcada: '🟠 Reunião',
-        proposta_enviada: '🟣 Proposta',
-        cliente: '✅ Cliente',
-        perdido: '❌ Perdido'
-    };
+    
     const nivelEmoji = { 'Inicial': '🔴', 'Intermediário': '🟡', 'Avançado': '🟢' };
     container.innerHTML = leads.map(l => {
-        const sol = l.diagnostico?.necessidades?.solucoes || [];
+        const sol = getLeadNecessidades(l).solucoes || [];
+        const nome = getLeadNome(l);
+        const empresa = getLeadEmpresa(l);
+        const whatsapp = getLeadWhatsapp(l);
+        const segmento = getLeadSegmento(l);
+        const pontuacao = getLeadPontuacao(l);
+        const nivel = getLeadNivel(l);
+        const status = l.status || 'novo';
+        
         return `
-                <div class="lead-card" onclick="abrirDetalhes('${l.id}')">
-                    <div class="head">
-                        <div>
-                            <div class="name">${l.cliente?.nome || 'N/A'}</div>
-                            <div class="company">${l.cliente?.empresa || ''}</div>
-                        </div>
-                        <span class="badge-status ${statusClasses[l.status] || 'status-novo'}">${statusLabels[l.status] || l.status}</span>
+            <div class="lead-card" onclick="abrirDetalhes('${l.id}')">
+                <div class="head">
+                    <div>
+                        <div class="name"><i class="ph ph-user ph-bold"></i> ${nome}</div>
+                        ${empresa ? `<div class="company"><i class="ph ph-buildings ph-bold"></i> ${empresa}</div>` : ''}
                     </div>
-                    <div class="tags">
-                        ${l.cliente?.segmento ? `<span class="tag"><i class="ph ph-tag ph-bold"></i> ${l.cliente.segmento}</span>` : ''}
-                        ${l.cliente?.whatsapp ? `<span class="tag tag-whatsapp"><i class="ph ph-whatsapp-logo ph-bold"></i> ${l.cliente.whatsapp}</span>` : ''}
-                        <span class="tag">${nivelEmoji[l.diagnostico?.nivel] || ''} ${l.diagnostico?.nivel || 'N/A'}</span>
-                    </div>
-                    <div class="footer">
-                        <span class="score"><i class="ph ph-star ph-bold"></i> ${l.diagnostico?.pontuacao_total || 0} pts</span>
-                        <span style="font-size:0.65rem; color:rgba(255,255,255,0.25);">${sol.slice(0, 2).join(', ')}${sol.length > 2 ? '...' : ''}</span>
-                        <span class="click-hint"><i class="ph ph-arrow-circle-right ph-bold"></i></span>
-                    </div>
+                    <span class="badge-status ${statusClasses[status] || 'status-novo'}">${statusLabels[status] || status}</span>
                 </div>
-            `;
+                <div class="tags">
+                    ${segmento ? `<span class="tag"><i class="ph ph-tag ph-bold"></i> ${segmento}</span>` : ''}
+                    ${whatsapp ? `<span class="tag tag-whatsapp"><i class="ph ph-whatsapp-logo ph-bold"></i> ${whatsapp}</span>` : ''}
+                    <span class="tag">${nivelEmoji[nivel] || ''} ${nivel}</span>
+                </div>
+                <div class="footer">
+                    <span class="score"><i class="ph ph-star ph-bold"></i> ${pontuacao} pts</span>
+                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.25);">${sol.slice(0, 2).join(', ')}${sol.length > 2 ? '...' : ''}</span>
+                    <span class="click-hint"><i class="ph ph-arrow-circle-right ph-bold"></i></span>
+                </div>
+            </div>
+        `;
     }).join('');
 }
 
+// ===== ABRIR DETALHES =====
 async function abrirDetalhes(leadId) {
     try {
         const res = await fetch(`${API_URL}/leads/${leadId}`);
         const lead = await res.json();
         const modal = document.getElementById('modalDetalhes');
         const content = document.getElementById('modalContent');
-        const statusLabels = {
-            novo: '🟢 Novo',
-            contactado: '🟡 Contactado',
-            reuniao_marcada: '🟠 Reunião',
-            proposta_enviada: '🟣 Proposta',
-            cliente: '✅ Cliente',
-            perdido: '❌ Perdido'
-        };
+        
+        const nome = getLeadNome(lead);
+        const empresa = getLeadEmpresa(lead);
+        const whatsapp = getLeadWhatsapp(lead);
+        const segmento = getLeadSegmento(lead);
+        const pontuacao = getLeadPontuacao(lead);
+        const nivel = getLeadNivel(lead);
+        const sol = getLeadNecessidades(lead).solucoes || [];
+        const dores = getLeadNecessidades(lead).dores || [];
+        const status = lead.status || 'novo';
         const nivelEmoji = { 'Inicial': '🔴', 'Intermediário': '🟡', 'Avançado': '🟢' };
-        const sol = lead.diagnostico?.necessidades?.solucoes || [];
-        const dores = lead.diagnostico?.necessidades?.dores || [];
 
         content.innerHTML = `
-                <div style="margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="font-size:1.3rem; font-weight:700;">${lead.cliente?.nome || 'N/A'}</h2>
-                        <span class="badge-status ${statusClasses[lead.status] || 'status-novo'}">${statusLabels[lead.status] || lead.status}</span>
-                    </div>
-                    ${lead.cliente?.empresa ? `<p style="color:rgba(255,255,255,0.5);"><i class="ph ph-buildings ph-bold"></i> ${lead.cliente.empresa}</p>` : ''}
+            <div style="margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="font-size:1.3rem; font-weight:700;"><i class="ph ph-user ph-bold"></i> ${nome}</h2>
+                    <span class="badge-status ${statusClasses[status] || 'status-novo'}">${statusLabels[status] || status}</span>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:0.5rem; margin-bottom:1rem;">
-                    <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">WhatsApp</span><br><span style="font-weight:500;">${lead.cliente?.whatsapp || 'N/A'}</span></div>
-                    <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Email</span><br><span style="font-weight:500;">${lead.cliente?.email || 'N/A'}</span></div>
-                    <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Segmento</span><br><span style="font-weight:500;">${lead.cliente?.segmento || 'N/A'}</span></div>
-                    <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Data</span><br><span style="font-weight:500;">${new Date(lead.data_cadastro).toLocaleString('pt-MZ')}</span></div>
+                ${empresa ? `<p style="color:rgba(255,255,255,0.5);"><i class="ph ph-buildings ph-bold"></i> ${empresa}</p>` : ''}
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:0.5rem; margin-bottom:1rem;">
+                <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">WhatsApp</span><br><span style="font-weight:500;"><i class="ph ph-whatsapp-logo ph-bold" style="color:#25D366;"></i> ${whatsapp || 'N/A'}</span></div>
+                <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Email</span><br><span style="font-weight:500;"><i class="ph ph-envelope ph-bold"></i> ${lead.email || 'N/A'}</span></div>
+                <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Segmento</span><br><span style="font-weight:500;"><i class="ph ph-tag ph-bold"></i> ${segmento || 'N/A'}</span></div>
+                <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Data</span><br><span style="font-weight:500;"><i class="ph ph-calendar ph-bold"></i> ${new Date(lead.data_cadastro).toLocaleString('pt-MZ')}</span></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:0.5rem; margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-size:1.2rem; font-weight:700; color:#8B5CF6;"><i class="ph ph-star ph-bold"></i> ${pontuacao} pts</span>
+                    <span>${nivelEmoji[nivel] || ''} ${nivel || 'N/A'}</span>
                 </div>
-                <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:0.5rem; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="font-size:1.2rem; font-weight:700; color:#8B5CF6;">${lead.diagnostico?.pontuacao_total || 0} pts</span>
-                        <span>${nivelEmoji[lead.diagnostico?.nivel] || ''} ${lead.diagnostico?.nivel || 'N/A'}</span>
-                    </div>
-                    <p style="font-size:0.8rem; color:rgba(255,255,255,0.5);">${lead.diagnostico?.descricao || ''}</p>
+                <p style="font-size:0.8rem; color:rgba(255,255,255,0.5);">${lead.descricao || ''}</p>
+            </div>
+            ${sol.length ? `
+                <div style="margin-bottom:0.5rem; background:rgba(139,92,246,0.04); padding:0.5rem; border-radius:0.5rem;">
+                    <span style="font-size:0.6rem; color:rgba(255,255,255,0.3);"><i class="ph ph-lightbulb ph-bold"></i> Soluções</span><br>
+                    ${sol.map(s => `<span style="font-size:0.75rem; background:rgba(139,92,246,0.08); padding:0.1rem 0.4rem; border-radius:9999px; color:#8B5CF6; display:inline-block; margin:0.1rem;">${s}</span>`).join(' ')}
                 </div>
-                ${sol.length ? `
-                    <div style="margin-bottom:0.5rem; background:rgba(139,92,246,0.04); padding:0.5rem; border-radius:0.5rem;">
-                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Soluções</span><br>
-                        ${sol.map(s => `<span style="font-size:0.75rem; background:rgba(139,92,246,0.08); padding:0.1rem 0.4rem; border-radius:9999px; color:#8B5CF6; display:inline-block; margin:0.1rem;">${s}</span>`).join(' ')}
-                    </div>
+            ` : ''}
+            ${dores.length ? `
+                <div style="margin-bottom:1rem; background:rgba(239,68,68,0.04); padding:0.5rem; border-radius:0.5rem;">
+                    <span style="font-size:0.6rem; color:rgba(255,255,255,0.3);"><i class="ph ph-warning ph-bold"></i> Dores</span><br>
+                    ${dores.map(d => `<span style="font-size:0.75rem; background:rgba(239,68,68,0.08); padding:0.1rem 0.4rem; border-radius:9999px; color:#f87171; display:inline-block; margin:0.1rem;">${d}</span>`).join(' ')}
+                </div>
+            ` : ''}
+            <div style="display:flex; gap:0.5rem; padding-top:0.5rem; border-top:1px solid rgba(255,255,255,0.04); flex-wrap:wrap;">
+                <select onchange="atualizarStatus('${lead.id}', this.value)" class="input-zyron" style="flex:1; min-width:120px; padding:0.3rem 0.5rem; font-size:0.75rem; border-radius:0.5rem;">
+                    <option value="novo" ${status === 'novo' ? 'selected' : ''}>🟢 Novo</option>
+                    <option value="contactado" ${status === 'contactado' ? 'selected' : ''}>🟡 Contactado</option>
+                    <option value="reuniao_marcada" ${status === 'reuniao_marcada' ? 'selected' : ''}>🟠 Reunião</option>
+                    <option value="proposta_enviada" ${status === 'proposta_enviada' ? 'selected' : ''}>🟣 Proposta</option>
+                    <option value="cliente" ${status === 'cliente' ? 'selected' : ''}>✅ Cliente</option>
+                    <option value="perdido" ${status === 'perdido' ? 'selected' : ''}>❌ Perdido</option>
+                </select>
+                ${whatsapp ? `
+                    <a href="https://wa.me/${whatsapp.replace(/\s/g, '').replace(/^\+/, '')}" target="_blank" class="btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem; text-decoration:none; width:auto; background:#25D366;">
+                        <i class="ph ph-whatsapp-logo ph-bold"></i>
+                    </a>
                 ` : ''}
-                ${dores.length ? `
-                    <div style="margin-bottom:1rem; background:rgba(239,68,68,0.04); padding:0.5rem; border-radius:0.5rem;">
-                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Dores</span><br>
-                        ${dores.map(d => `<span style="font-size:0.75rem; background:rgba(239,68,68,0.08); padding:0.1rem 0.4rem; border-radius:9999px; color:#f87171; display:inline-block; margin:0.1rem;">${d}</span>`).join(' ')}
-                    </div>
-                ` : ''}
-                <div style="display:flex; gap:0.5rem; padding-top:0.5rem; border-top:1px solid rgba(255,255,255,0.04); flex-wrap:wrap;">
-                    <select onchange="atualizarStatus('${lead.id}', this.value)" class="input-zyron" style="flex:1; min-width:120px; padding:0.3rem 0.5rem; font-size:0.75rem; border-radius:0.5rem;">
-                        <option value="novo" ${lead.status === 'novo' ? 'selected' : ''}>🟢 Novo</option>
-                        <option value="contactado" ${lead.status === 'contactado' ? 'selected' : ''}>🟡 Contactado</option>
-                        <option value="reuniao_marcada" ${lead.status === 'reuniao_marcada' ? 'selected' : ''}>🟠 Reunião</option>
-                        <option value="proposta_enviada" ${lead.status === 'proposta_enviada' ? 'selected' : ''}>🟣 Proposta</option>
-                        <option value="cliente" ${lead.status === 'cliente' ? 'selected' : ''}>✅ Cliente</option>
-                        <option value="perdido" ${lead.status === 'perdido' ? 'selected' : ''}>❌ Perdido</option>
-                    </select>
-                    ${lead.cliente?.whatsapp ? `
-                        <a href="https://wa.me/${lead.cliente.whatsapp.replace(/\s/g, '').replace(/^\+/, '')}" target="_blank" class="btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem; text-decoration:none; width:auto;">
-                            <i class="ph ph-whatsapp-logo ph-bold"></i>
-                        </a>
-                    ` : ''}
-                    <button onclick="fecharModal()" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.75rem;">
-                        <i class="ph ph-x ph-bold"></i> Fechar
-                    </button>
-                </div>
-            `;
+                <button onclick="fecharModal()" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.75rem;">
+                    <i class="ph ph-x ph-bold"></i> Fechar
+                </button>
+            </div>
+        `;
 
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -158,6 +212,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') fecharModal();
 });
 
+// ===== ATUALIZAR STATUS =====
 async function atualizarStatus(leadId, novoStatus) {
     try {
         const res = await fetch(`${API_URL}/leads/${leadId}/status`, {
@@ -168,7 +223,6 @@ async function atualizarStatus(leadId, novoStatus) {
         if (res.ok) {
             aplicarFiltros();
             fecharModal();
-            // Reabrir com dados atualizados
             setTimeout(() => abrirDetalhes(leadId), 300);
         }
     } catch (e) {
@@ -176,6 +230,7 @@ async function atualizarStatus(leadId, novoStatus) {
     }
 }
 
+// ===== FILTROS =====
 function aplicarFiltros() {
     const filtros = {
         status: document.getElementById('filtroStatus').value,
@@ -198,19 +253,20 @@ function filtrarStatus(status) {
     aplicarFiltros();
 }
 
+// ===== EXPORTAR CSV =====
 function exportarCSV() {
     if (!leadsAtuais.length) { alert('Nenhum lead para exportar.'); return; }
     const headers = ['Nome', 'Empresa', 'WhatsApp', 'Email', 'Segmento', 'Pontuação', 'Nível', 'Interesse', 'Status'];
     const rows = leadsAtuais.map(l => {
-        const sol = l.diagnostico?.necessidades?.solucoes || [];
+        const sol = getLeadNecessidades(l).solucoes || [];
         return [
-            l.cliente?.nome || '',
-            l.cliente?.empresa || '',
-            l.cliente?.whatsapp || '',
-            l.cliente?.email || '',
-            l.cliente?.segmento || '',
-            l.diagnostico?.pontuacao_total || 0,
-            l.diagnostico?.nivel || '',
+            getLeadNome(l),
+            getLeadEmpresa(l),
+            getLeadWhatsapp(l),
+            l.email || '',
+            getLeadSegmento(l),
+            getLeadPontuacao(l),
+            getLeadNivel(l),
             sol.join('; '),
             l.status || ''
         ];
@@ -223,7 +279,7 @@ function exportarCSV() {
     link.click();
 }
 
-// Inicializar
+// ===== INICIAR =====
 const urlParams = new URLSearchParams(window.location.search);
 const statusParam = urlParams.get('status');
 if (statusParam) {

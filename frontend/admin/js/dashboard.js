@@ -28,16 +28,65 @@ async function carregarDados() {
         atualizarGraficos(allLeads, currentPeriod);
     } catch (error) {
         console.error('❌ Erro ao carregar dados:', error);
-        // Mostrar estado vazio
-        document.getElementById('totalLeads').textContent = '0';
-        document.getElementById('totalQuizzes').textContent = '0';
-        document.getElementById('mediaPontuacao').textContent = '0';
-        document.getElementById('leadsPrioritarios').textContent = '0';
-        document.getElementById('receitaPotencial').textContent = '0 MZN';
-        document.getElementById('taxaConversao').textContent = '0%';
     }
 }
 
+// ===== FUNÇÃO PARA OBTER NOME DO LEAD (compatível com ambos formatos) =====
+function getLeadNome(lead) {
+    if (lead.nome) return lead.nome;
+    if (lead.cliente && lead.cliente.nome) return lead.cliente.nome;
+    return 'N/A';
+}
+
+function getLeadEmpresa(lead) {
+    if (lead.empresa) return lead.empresa;
+    if (lead.cliente && lead.cliente.empresa) return lead.cliente.empresa;
+    return '';
+}
+
+function getLeadWhatsapp(lead) {
+    if (lead.whatsapp) return lead.whatsapp;
+    if (lead.cliente && lead.cliente.whatsapp) return lead.cliente.whatsapp;
+    return '';
+}
+
+function getLeadSegmento(lead) {
+    if (lead.segmento) return lead.segmento;
+    if (lead.cliente && lead.cliente.segmento) return lead.cliente.segmento;
+    return '';
+}
+
+function getLeadPontuacao(lead) {
+    if (lead.pontuacao_total !== undefined && lead.pontuacao_total !== null) return lead.pontuacao_total;
+    if (lead.diagnostico && lead.diagnostico.pontuacao_total !== undefined) return lead.diagnostico.pontuacao_total;
+    return 0;
+}
+
+function getLeadNivel(lead) {
+    if (lead.nivel) return lead.nivel;
+    if (lead.diagnostico && lead.diagnostico.nivel) return lead.diagnostico.nivel;
+    return 'N/A';
+}
+
+function getLeadCategorias(lead) {
+    if (lead.categorias) return lead.categorias;
+    if (lead.diagnostico && lead.diagnostico.categorias) return lead.diagnostico.categorias;
+    return null;
+}
+
+function getLeadNecessidades(lead) {
+    if (lead.necessidades) return lead.necessidades;
+    if (lead.diagnostico && lead.diagnostico.necessidades) return lead.diagnostico.necessidades;
+    return { dores: [], solucoes: [] };
+}
+
+function getLeadPrioridade(lead) {
+    if (lead.prioridade) return lead.prioridade;
+    if (lead.comercial && lead.comercial.prioridade) return lead.comercial.prioridade;
+    return 'media';
+}
+
+// ===== SET PERIOD =====
 function setPeriod(period) {
     currentPeriod = period;
     document.querySelectorAll('.btn-period').forEach(btn => {
@@ -67,16 +116,17 @@ function filtrarPorPeriodo(leads, period) {
     return leads.filter(l => new Date(l.data_cadastro) >= cutoff);
 }
 
+// ===== ATUALIZAR DASHBOARD =====
 function atualizarDashboard(leads) {
     const total = leads.length;
-    const quizzes = leads.filter(l => l.pontuacao_total !== null && l.pontuacao_total !== undefined).length;
-    const pontuacoes = leads.filter(l => l.pontuacao_total).map(l => l.pontuacao_total);
+    const quizzes = leads.filter(l => getLeadPontuacao(l) > 0).length;
+    const pontuacoes = leads.map(l => getLeadPontuacao(l));
     const media = pontuacoes.length ? Math.round(pontuacoes.reduce((a, b) => a + b, 0) / pontuacoes.length) : 0;
-    const prioritarios = leads.filter(l => l.prioridade === 'alta' || (l.pontuacao_total || 0) > 80).length;
+    const prioritarios = leads.filter(l => getLeadPrioridade(l) === 'alta' || getLeadPontuacao(l) > 80).length;
     const clientes = leads.filter(l => l.status === 'cliente').length;
     const taxa = total ? Math.round((clientes / total) * 100) : 0;
     const receita = leads.reduce((acc, l) => {
-        const score = l.pontuacao_total || 0;
+        const score = getLeadPontuacao(l);
         if (score > 70) acc += 50000;
         else if (score > 40) acc += 25000;
         else acc += 10000;
@@ -105,8 +155,8 @@ function atualizarDashboard(leads) {
     const cats = { presencaDigital: 0, gestao: 0, automacao: 0, crescimento: 0, interesse: 0 };
     let countCats = 0;
     leads.forEach(l => {
-        if (l.categorias) {
-            const c = l.categorias;
+        const c = getLeadCategorias(l);
+        if (c) {
             cats.presencaDigital += c.presencaDigital || 0;
             cats.gestao += c.gestao || 0;
             cats.automacao += c.automacao || 0;
@@ -126,7 +176,7 @@ function atualizarDashboard(leads) {
     // Serviços
     const servMap = { 'Website profissional': 0, 'Sistema de gestão': 0, 'Automação': 0, 'IA': 0, 'Loja online': 0 };
     leads.forEach(l => {
-        const sol = l.necessidades?.solucoes || [];
+        const sol = getLeadNecessidades(l).solucoes || [];
         sol.forEach(s => {
             if (servMap[s] !== undefined) servMap[s]++;
         });
@@ -155,11 +205,11 @@ function atualizarDashboard(leads) {
     } else {
         container.innerHTML = recent.map(l => {
             const tempo = timeAgo(new Date(l.data_cadastro));
-            const score = l.pontuacao_total || 0;
-            const sol = (l.necessidades?.solucoes || [])[0] || '';
+            const score = getLeadPontuacao(l);
+            const sol = (getLeadNecessidades(l).solucoes || [])[0] || '';
             return `<div class="recent-item">
                         <span class="time">${tempo}</span>
-                        <span class="name">${l.nome || 'N/A'}</span>
+                        <span class="name">${getLeadNome(l)}</span>
                         <span class="score">${score} pts</span>
                         ${sol ? `<span class="tag">${sol}</span>` : ''}
                     </div>`;
@@ -169,7 +219,7 @@ function atualizarDashboard(leads) {
     // Dores frequentes
     const dorMap = {};
     leads.forEach(l => {
-        const dores = l.necessidades?.dores || [];
+        const dores = getLeadNecessidades(l).dores || [];
         dores.forEach(d => { dorMap[d] = (dorMap[d] || 0) + 1; });
     });
     const sortedDores = Object.entries(dorMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
@@ -183,6 +233,7 @@ function atualizarDashboard(leads) {
     }
 }
 
+// ===== GRÁFICOS =====
 function atualizarGraficos(leads, period) {
     const filteredLeads = filtrarPorPeriodo(leads, period);
     
@@ -351,8 +402,8 @@ function atualizarGraficos(leads, period) {
     const cats = { presencaDigital: 0, gestao: 0, automacao: 0, crescimento: 0, interesse: 0 };
     let countCats = 0;
     filteredLeads.forEach(l => {
-        if (l.categorias) {
-            const c = l.categorias;
+        const c = getLeadCategorias(l);
+        if (c) {
             cats.presencaDigital += c.presencaDigital || 0;
             cats.gestao += c.gestao || 0;
             cats.automacao += c.automacao || 0;
@@ -419,6 +470,7 @@ function atualizarGraficos(leads, period) {
     }
 }
 
+// ===== TIME AGO =====
 function timeAgo(date) {
     const diff = Math.floor((Date.now() - date.getTime()) / 60000);
     if (diff < 1) return 'agora';
@@ -427,6 +479,7 @@ function timeAgo(date) {
     return Math.floor(diff / 1440) + ' d';
 }
 
+// ===== FILTROS =====
 function filtrarPorStatus(status) {
     window.location.href = '/admin/leads.html?status=' + status;
 }
@@ -435,7 +488,75 @@ function verTodosStatus() {
     window.location.href = '/admin/leads.html';
 }
 
-// Auto-refresh a cada 30 segundos
+// ===== THEME =====
+function toggleTheme() {
+    const body = document.body;
+    const thumb = document.getElementById('themeThumb');
+    if (body.classList.contains('dark-theme')) {
+        body.classList.remove('dark-theme');
+        body.classList.add('white-theme');
+        localStorage.setItem('theme', 'white');
+        thumb.innerHTML = '<i class="ph ph-sun ph-bold"></i>';
+    } else {
+        body.classList.remove('white-theme');
+        body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+        thumb.innerHTML = '<i class="ph ph-moon ph-bold"></i>';
+    }
+}
+
+function loadTheme() {
+    const saved = localStorage.getItem('theme') || 'dark';
+    const body = document.body;
+    const thumb = document.getElementById('themeThumb');
+    if (saved === 'white') {
+        body.classList.add('white-theme');
+        body.classList.remove('dark-theme');
+        if (thumb) thumb.innerHTML = '<i class="ph ph-sun ph-bold"></i>';
+    } else {
+        body.classList.add('dark-theme');
+        body.classList.remove('white-theme');
+        if (thumb) thumb.innerHTML = '<i class="ph ph-moon ph-bold"></i>';
+    }
+}
+
+// ===== LOGOUT =====
+function logout() {
+    localStorage.removeItem('adminLoggedIn');
+    window.location.href = '/admin/login.html';
+}
+
+// ===== RESET =====
+async function resetarDados() {
+    if (!confirm('⚠️ ATENÇÃO: Isso vai REMOVER TODOS os leads permanentemente. Continuar?')) {
+        return;
+    }
+    try {
+        const btn = document.querySelector('.btn-reset');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner ph-bold ph-spin"></i> Resetando...';
+        const response = await fetch(`${API_URL}/admin/reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('✅ Todos os dados foram removidos com sucesso!');
+            await carregarDados();
+        } else {
+            alert('❌ Erro ao resetar: ' + (data.error || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('❌ Erro ao resetar:', error);
+        alert('❌ Erro ao resetar dados: ' + error.message);
+    } finally {
+        const btn = document.querySelector('.btn-reset');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph ph-arrow-counter-clockwise ph-bold"></i> Reset';
+    }
+}
+
+// ===== AUTO-REFRESH =====
 let refreshInterval = setInterval(() => {
     console.log('🔄 Auto-refresh...');
     carregarDados();
@@ -449,5 +570,8 @@ document.addEventListener('click', () => {
     }, 30000);
 });
 
-// Iniciar
-document.addEventListener('DOMContentLoaded', carregarDados);
+// ===== INICIAR =====
+document.addEventListener('DOMContentLoaded', () => {
+    loadTheme();
+    carregarDados();
+});
