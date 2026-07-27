@@ -1,22 +1,40 @@
-/* ========================================
-   DASHBOARD SCRIPT
-   ======================================== */
-
+const API_URL = 'https://zyron-quiz.onrender.com/api';
 let allLeads = [];
 let currentPeriod = 'week';
 let chartLeadsPeriodo = null;
 let chartFunil = null;
 let chartRadar = null;
 
+// ===== CARREGAR DADOS =====
 async function carregarDados() {
     try {
+        console.log('🔄 Carregando dados...');
         const res = await fetch(`${API_URL}/leads`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        allLeads = data.leads || [];
+        console.log('📊 Dados recebidos:', data);
+        
+        // Verificar se os leads estão no formato correto
+        if (data.leads) {
+            allLeads = data.leads;
+        } else if (Array.isArray(data)) {
+            allLeads = data;
+        } else {
+            allLeads = [];
+        }
+        
+        console.log(`✅ ${allLeads.length} leads carregados`);
         atualizarDashboard(allLeads);
         atualizarGraficos(allLeads, currentPeriod);
     } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        console.error('❌ Erro ao carregar dados:', error);
+        // Mostrar estado vazio
+        document.getElementById('totalLeads').textContent = '0';
+        document.getElementById('totalQuizzes').textContent = '0';
+        document.getElementById('mediaPontuacao').textContent = '0';
+        document.getElementById('leadsPrioritarios').textContent = '0';
+        document.getElementById('receitaPotencial').textContent = '0 MZN';
+        document.getElementById('taxaConversao').textContent = '0%';
     }
 }
 
@@ -51,14 +69,14 @@ function filtrarPorPeriodo(leads, period) {
 
 function atualizarDashboard(leads) {
     const total = leads.length;
-    const quizzes = leads.filter(l => l.diagnostico).length;
-    const pontuacoes = leads.map(l => l.diagnostico?.pontuacao_total || 0);
+    const quizzes = leads.filter(l => l.pontuacao_total !== null && l.pontuacao_total !== undefined).length;
+    const pontuacoes = leads.filter(l => l.pontuacao_total).map(l => l.pontuacao_total);
     const media = pontuacoes.length ? Math.round(pontuacoes.reduce((a, b) => a + b, 0) / pontuacoes.length) : 0;
-    const prioritarios = leads.filter(l => l.comercial?.prioridade === 'alta' || (l.diagnostico?.pontuacao_total || 0) > 80).length;
+    const prioritarios = leads.filter(l => l.prioridade === 'alta' || (l.pontuacao_total || 0) > 80).length;
     const clientes = leads.filter(l => l.status === 'cliente').length;
     const taxa = total ? Math.round((clientes / total) * 100) : 0;
     const receita = leads.reduce((acc, l) => {
-        const score = l.diagnostico?.pontuacao_total || 0;
+        const score = l.pontuacao_total || 0;
         if (score > 70) acc += 50000;
         else if (score > 40) acc += 25000;
         else acc += 10000;
@@ -87,8 +105,8 @@ function atualizarDashboard(leads) {
     const cats = { presencaDigital: 0, gestao: 0, automacao: 0, crescimento: 0, interesse: 0 };
     let countCats = 0;
     leads.forEach(l => {
-        if (l.diagnostico?.categorias) {
-            const c = l.diagnostico.categorias;
+        if (l.categorias) {
+            const c = l.categorias;
             cats.presencaDigital += c.presencaDigital || 0;
             cats.gestao += c.gestao || 0;
             cats.automacao += c.automacao || 0;
@@ -108,7 +126,7 @@ function atualizarDashboard(leads) {
     // Serviços
     const servMap = { 'Website profissional': 0, 'Sistema de gestão': 0, 'Automação': 0, 'IA': 0, 'Loja online': 0 };
     leads.forEach(l => {
-        const sol = l.diagnostico?.necessidades?.solucoes || [];
+        const sol = l.necessidades?.solucoes || [];
         sol.forEach(s => {
             if (servMap[s] !== undefined) servMap[s]++;
         });
@@ -119,11 +137,15 @@ function atualizarDashboard(leads) {
     document.getElementById('servAutomacao').textContent = servMap['Automação'];
     document.getElementById('servIA').textContent = servMap['IA'];
     document.getElementById('servLoja').textContent = servMap['Loja online'];
-    document.querySelector('#servicosRank .rank-item:nth-child(1) .fill').style.width = (servMap['Website profissional'] / maxServ * 100) + '%';
-    document.querySelector('#servicosRank .rank-item:nth-child(2) .fill').style.width = (servMap['Sistema de gestão'] / maxServ * 100) + '%';
-    document.querySelector('#servicosRank .rank-item:nth-child(3) .fill').style.width = (servMap['Automação'] / maxServ * 100) + '%';
-    document.querySelector('#servicosRank .rank-item:nth-child(4) .fill').style.width = (servMap['IA'] / maxServ * 100) + '%';
-    document.querySelector('#servicosRank .rank-item:nth-child(5) .fill').style.width = (servMap['Loja online'] / maxServ * 100) + '%';
+    
+    const fills = document.querySelectorAll('#servicosRank .rank-item .fill');
+    if (fills.length >= 5) {
+        fills[0].style.width = (servMap['Website profissional'] / maxServ * 100) + '%';
+        fills[1].style.width = (servMap['Sistema de gestão'] / maxServ * 100) + '%';
+        fills[2].style.width = (servMap['Automação'] / maxServ * 100) + '%';
+        fills[3].style.width = (servMap['IA'] / maxServ * 100) + '%';
+        fills[4].style.width = (servMap['Loja online'] / maxServ * 100) + '%';
+    }
 
     // Últimos leads (5)
     const recent = leads.slice(-5).reverse();
@@ -133,11 +155,11 @@ function atualizarDashboard(leads) {
     } else {
         container.innerHTML = recent.map(l => {
             const tempo = timeAgo(new Date(l.data_cadastro));
-            const score = l.diagnostico?.pontuacao_total || 0;
-            const sol = (l.diagnostico?.necessidades?.solucoes || [])[0] || '';
+            const score = l.pontuacao_total || 0;
+            const sol = (l.necessidades?.solucoes || [])[0] || '';
             return `<div class="recent-item">
                         <span class="time">${tempo}</span>
-                        <span class="name">${l.cliente?.nome || 'N/A'}</span>
+                        <span class="name">${l.nome || 'N/A'}</span>
                         <span class="score">${score} pts</span>
                         ${sol ? `<span class="tag">${sol}</span>` : ''}
                     </div>`;
@@ -147,7 +169,7 @@ function atualizarDashboard(leads) {
     // Dores frequentes
     const dorMap = {};
     leads.forEach(l => {
-        const dores = l.diagnostico?.necessidades?.dores || [];
+        const dores = l.necessidades?.dores || [];
         dores.forEach(d => { dorMap[d] = (dorMap[d] || 0) + 1; });
     });
     const sortedDores = Object.entries(dorMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
@@ -231,46 +253,48 @@ function atualizarGraficos(leads, period) {
     });
 
     if (chartLeadsPeriodo) chartLeadsPeriodo.destroy();
-    const ctx1 = document.getElementById('chartLeadsPeriodo').getContext('2d');
-    chartLeadsPeriodo = new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Leads',
-                data: valores,
-                backgroundColor: 'rgba(139, 92, 246, 0.6)',
-                borderColor: '#8B5CF6',
-                borderWidth: 2,
-                borderRadius: 4,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.parsed.y + ' leads';
+    const ctx1 = document.getElementById('chartLeadsPeriodo');
+    if (ctx1) {
+        chartLeadsPeriodo = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Leads',
+                    data: valores,
+                    backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                    borderColor: '#8B5CF6',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' leads';
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1, color: 'rgba(255,255,255,0.3)' },
-                    grid: { color: 'rgba(255,255,255,0.05)' }
                 },
-                x: {
-                    ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 9 } },
-                    grid: { display: false }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: 'rgba(255,255,255,0.3)' },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    x: {
+                        ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 9 } },
+                        grid: { display: false }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
     // 2. Funil de Vendas
     const statusColorsArray = ['#34d399', '#fbbf24', '#fb923c', '#a78bfa', '#34d399', '#f87171'];
@@ -280,53 +304,55 @@ function atualizarGraficos(leads, period) {
     const statusData = [statusCount.novo, statusCount.contactado, statusCount.reuniao_marcada, statusCount.proposta_enviada, statusCount.cliente, statusCount.perdido];
 
     if (chartFunil) chartFunil.destroy();
-    const ctx2 = document.getElementById('chartFunil').getContext('2d');
-    chartFunil = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-            labels: statusLabels,
-            datasets: [{
-                label: 'Leads',
-                data: statusData,
-                backgroundColor: statusColorsArray.map(c => c + '80'),
-                borderColor: statusColorsArray,
-                borderWidth: 2,
-                borderRadius: 4,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.parsed.y + ' leads';
+    const ctx2 = document.getElementById('chartFunil');
+    if (ctx2) {
+        chartFunil = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    label: 'Leads',
+                    data: statusData,
+                    backgroundColor: statusColorsArray.map(c => c + '80'),
+                    borderColor: statusColorsArray,
+                    borderWidth: 2,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' leads';
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1, color: 'rgba(255,255,255,0.3)' },
-                    grid: { color: 'rgba(255,255,255,0.05)' }
                 },
-                x: {
-                    ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } },
-                    grid: { display: false }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: 'rgba(255,255,255,0.3)' },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    x: {
+                        ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } },
+                        grid: { display: false }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
-    // 3. Radar - Score por categoria
+    // 3. Radar
     const cats = { presencaDigital: 0, gestao: 0, automacao: 0, crescimento: 0, interesse: 0 };
     let countCats = 0;
     filteredLeads.forEach(l => {
-        if (l.diagnostico?.categorias) {
-            const c = l.diagnostico.categorias;
+        if (l.categorias) {
+            const c = l.categorias;
             cats.presencaDigital += c.presencaDigital || 0;
             cats.gestao += c.gestao || 0;
             cats.automacao += c.automacao || 0;
@@ -346,89 +372,59 @@ function atualizarGraficos(leads, period) {
     const maxValues = [25, 25, 20, 20, 10];
 
     if (chartRadar) chartRadar.destroy();
-    const ctx3 = document.getElementById('chartRadar').getContext('2d');
-    chartRadar = new Chart(ctx3, {
-        type: 'radar',
-        data: {
-            labels: radarLabels,
-            datasets: [{
-                label: 'Score Médio',
-                data: radarData,
-                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                borderColor: '#8B5CF6',
-                borderWidth: 2,
-                pointBackgroundColor: '#8B5CF6',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const max = maxValues[context.dataIndex];
-                            return context.parsed.r + ' / ' + max;
+    const ctx3 = document.getElementById('chartRadar');
+    if (ctx3) {
+        chartRadar = new Chart(ctx3, {
+            type: 'radar',
+            data: {
+                labels: radarLabels,
+                datasets: [{
+                    label: 'Score Médio',
+                    data: radarData,
+                    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                    borderColor: '#8B5CF6',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#8B5CF6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const max = maxValues[context.dataIndex];
+                                return context.parsed.r + ' / ' + max;
+                            }
                         }
                     }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 25,
+                        ticks: { color: 'rgba(255,255,255,0.3)', stepSize: 5, backdropColor: 'transparent' },
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        angleLines: { color: 'rgba(255,255,255,0.05)' },
+                        pointLabels: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } }
+                    }
                 }
-            },
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    max: 25,
-                    ticks: { color: 'rgba(255,255,255,0.3)', stepSize: 5, backdropColor: 'transparent' },
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    angleLines: { color: 'rgba(255,255,255,0.05)' },
-                    pointLabels: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } }
-                }
-            }
-        }
-    });
-}
-
-// ===== FUNÇÃO DE RESET (LIMPAR TUDO) =====
-async function resetarDados() {
-    if (!confirm('⚠️ ATENÇÃO: Isso vai REMOVER TODOS os leads permanentemente. Continuar?')) {
-        return;
-    }
-    
-    try {
-        const btn = document.querySelector('.btn-reset');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ph ph-spinner ph-bold ph-spin"></i> Resetando...';
-        
-        console.log('📤 Enviando requisição de reset...');
-        
-        const response = await fetch(`${API_URL}/admin/reset`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
             }
         });
-        
-        const data = await response.json();
-        console.log('📥 Resposta:', data);
-        
-        if (data.success) {
-            alert('✅ Todos os dados foram removidos com sucesso!\n\nO sistema está limpo para novos leads.');
-            // Recarregar dados
-            await carregarDados();
-        } else {
-            alert('❌ Erro ao resetar: ' + (data.error || 'Erro desconhecido'));
-        }
-    } catch (error) {
-        console.error('❌ Erro ao resetar:', error);
-        alert('❌ Erro ao resetar dados: ' + error.message);
-    } finally {
-        const btn = document.querySelector('.btn-reset');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="ph ph-arrow-counter-clockwise ph-bold"></i> Reset';
     }
+}
+
+function timeAgo(date) {
+    const diff = Math.floor((Date.now() - date.getTime()) / 60000);
+    if (diff < 1) return 'agora';
+    if (diff < 60) return diff + ' min';
+    if (diff < 1440) return Math.floor(diff / 60) + ' h';
+    return Math.floor(diff / 1440) + ' d';
 }
 
 function filtrarPorStatus(status) {
@@ -439,12 +435,19 @@ function verTodosStatus() {
     window.location.href = '/admin/leads.html';
 }
 
-// Iniciar
-document.addEventListener('DOMContentLoaded', carregarDados);
-
-// ===== AUTO REFRESH =====
-// Recarregar dados a cada 30 segundos
-setInterval(() => {
+// Auto-refresh a cada 30 segundos
+let refreshInterval = setInterval(() => {
     console.log('🔄 Auto-refresh...');
     carregarDados();
 }, 30000);
+
+document.addEventListener('click', () => {
+    clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => {
+        console.log('🔄 Auto-refresh...');
+        carregarDados();
+    }, 30000);
+});
+
+// Iniciar
+document.addEventListener('DOMContentLoaded', carregarDados);
