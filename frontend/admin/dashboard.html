@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Zyron Labs</title>
+    <link href="../styles/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="css/common.css" rel="stylesheet">
+    <link href="css/dashboard.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .filter-period {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+        .filter-period .btn-period {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.4);
+            padding: 0.2rem 0.7rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .filter-period .btn-period:hover {
+            background: rgba(255,255,255,0.06);
+            color: #FFFFFF;
+        }
+        .filter-period .btn-period.active {
+            background: rgba(139,92,246,0.15);
+            border-color: rgba(139,92,246,0.3);
+            color: #8B5CF6;
+        }
+        .btn-reset {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.25);
+            color: #f87171;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .btn-reset:hover {
+            background: rgba(239,68,68,0.25);
+            border-color: rgba(239,68,68,0.4);
+            transform: scale(1.05);
+        }
+        body.white-theme .filter-period .btn-period {
+            color: rgba(0,0,0,0.3);
+            border-color: rgba(0,0,0,0.06);
+            background: rgba(0,0,0,0.02);
+        }
+        body.white-theme .filter-period .btn-period:hover {
+            background: rgba(0,0,0,0.04);
+            color: #1A1A1A;
+        }
+        body.white-theme .filter-period .btn-period.active {
+            background: rgba(139,92,246,0.08);
+            border-color: rgba(139,92,246,0.2);
+            color: #8B5CF6;
+        }
+        body.white-theme .btn-reset {
+            color: #dc2626;
+            border-color: rgba(220,38,38,0.2);
+            background: rgba(220,38,38,0.05);
+        }
+        body.white-theme .btn-reset:hover {
+            background: rgba(220,38,38,0.1);
+            border-color: rgba(220,38,38,0.4);
+        }
+        @media (max-width: 768px) {
+            .filter-period .btn-period {
+                font-size: 0.6rem;
+                padding: 0.15rem 0.5rem;
+            }
+            .btn-reset {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="glow-orbe glow-orbe-1"></div>
+    <div class="glow-orbe glow-orbe-2"></div>
+    <div class="glow-orbe glow-orbe-3"></div>
+
+    <!-- Header -->
+    <header class="header-zyron">
+        <div class="container flex-between">
+            <a href="/" class="logo">
+                <img src="../assets/logo.png" alt="Zyron Labs" style="height: 40px; width: auto;">
+            </a>
+            <div class="header-actions">
+                <button class="btn-reset" onclick="resetarDados()" title="Remover todos os leads">
+                    <i class="ph ph-trash ph-bold"></i> Limpar
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+                    <div class="toggle-track">
+                        <div class="toggle-thumb" id="themeThumb"><i class="ph ph-moon ph-bold"></i></div>
+                    </div>
+                </button>
+                <button class="btn-logout" onclick="logout()"><i class="ph ph-sign-out ph-bold"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-wrap">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="nav-section">Menu</div>
+            <a class="nav-item active" href="/admin/dashboard.html">
+                <i class="ph ph-chart-pie ph-bold"></i> Dashboard
+            </a>
+            <a class="nav-item" href="/admin/leads.html">
+                <i class="ph ph-users ph-bold"></i> Leads
+                <span class="badge-nav" id="sidebarLeads">0</span>
+            </a>
+            <a class="nav-item" href="/admin/analytics.html">
+                <i class="ph ph-chart-bar ph-bold"></i> Analytics
+            </a>
+            <div class="nav-divider"></div>
+            <div class="nav-section">Filtros Rápidos</div>
+            <a class="nav-item" href="#" onclick="filtrarPorStatus('novo')">
+                <i class="ph ph-circle ph-bold" style="color: #34d399;"></i> Novos
+            </a>
+            <a class="nav-item" href="#" onclick="filtrarPorStatus('contactado')">
+                <i class="ph ph-circle ph-bold" style="color: #fbbf24;"></i> Contactados
+            </a>
+            <a class="nav-item" href="#" onclick="filtrarPorStatus('cliente')">
+                <i class="ph ph-circle ph-bold" style="color: #34d399;"></i> Clientes
+            </a>
+        </aside>
+
+        <!-- Conteúdo -->
+        <main class="main-content">
+
+            <!-- Métricas Rápidas -->
+            <div class="metric-grid" id="metricGrid">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalLeads">0</div>
+                    <div class="metric-label"><i class="ph ph-users ph-bold"></i> Total Leads</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="totalQuizzes">0</div>
+                    <div class="metric-label"><i class="ph ph-list-checks ph-bold"></i> Quizzes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="mediaPontuacao">0</div>
+                    <div class="metric-label"><i class="ph ph-chart-bar ph-bold"></i> Média</div>
+                </div>
+                <div class="metric-card" style="border-color: rgba(139,92,246,0.15);">
+                    <div class="metric-value" style="color: #8B5CF6;" id="leadsPrioritarios">0</div>
+                    <div class="metric-label"><i class="ph ph-fire ph-bold"></i> Prioritários</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="receitaPotencial">0</div>
+                    <div class="metric-label"><i class="ph ph-coins ph-bold"></i> Receita Potencial</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="taxaConversao">0%</div>
+                    <div class="metric-label"><i class="ph ph-percent ph-bold"></i> Conversão</div>
+                </div>
+            </div>
+
+            <!-- GRÁFICO: Leads por período -->
+            <div class="glass-card">
+                <div class="section-title">
+                    <i class="ph ph-calendar ph-bold ph-primary"></i> Leads por Período
+                    <div class="filter-period" id="periodFilters">
+                        <button class="btn-period active" data-period="week" onclick="setPeriod('week')">Semana</button>
+                        <button class="btn-period" data-period="month" onclick="setPeriod('month')">Mês</button>
+                        <button class="btn-period" data-period="year" onclick="setPeriod('year')">Ano</button>
+                    </div>
+                </div>
+                <div style="position: relative; height: 200px;">
+                    <canvas id="chartLeadsPeriodo"></canvas>
+                </div>
+            </div>
+
+            <!-- Grid 2 colunas -->
+            <div class="grid-2">
+                <!-- Funil de Vendas -->
+                <div class="glass-card">
+                    <div class="section-title">
+                        <i class="ph ph-funnel ph-bold ph-primary"></i> Funil de Vendas
+                        <span class="see-all" onclick="verTodosStatus()">Ver todos →</span>
+                    </div>
+                    <div class="funnel-bar" id="funnelBar">
+                        <span class="funnel-item"><span class="dot" style="background:#34d399;"></span> Novos <span class="count" id="fNovo">0</span></span>
+                        <span class="funnel-item"><span class="dot" style="background:#fbbf24;"></span> Contactados <span class="count" id="fContactado">0</span></span>
+                        <span class="funnel-item"><span class="dot" style="background:#fb923c;"></span> Reuniões <span class="count" id="fReuniao">0</span></span>
+                        <span class="funnel-item"><span class="dot" style="background:#a78bfa;"></span> Propostas <span class="count" id="fProposta">0</span></span>
+                        <span class="funnel-item"><span class="dot" style="background:#34d399;"></span> Clientes <span class="count" id="fCliente">0</span></span>
+                        <span class="funnel-item"><span class="dot" style="background:#f87171;"></span> Perdidos <span class="count" id="fPerdido">0</span></span>
+                    </div>
+                    <div style="position: relative; height: 150px; margin-top: 1rem;">
+                        <canvas id="chartFunil"></canvas>
+                    </div>
+                </div>
+
+                <!-- Score por categoria -->
+                <div class="glass-card">
+                    <div class="section-title"><i class="ph ph-star ph-bold ph-primary"></i> Score por Categoria</div>
+                    <div class="score-grid" id="scoreGrid">
+                        <div class="score-mini"><div class="label">Presença</div><div class="value" id="sPresenca">0</div><div class="max">/25</div></div>
+                        <div class="score-mini"><div class="label">Gestão</div><div class="value" id="sGestao">0</div><div class="max">/25</div></div>
+                        <div class="score-mini"><div class="label">Automação</div><div class="value" id="sAutomacao">0</div><div class="max">/20</div></div>
+                        <div class="score-mini"><div class="label">Crescimento</div><div class="value" id="sCrescimento">0</div><div class="max">/20</div></div>
+                        <div class="score-mini"><div class="label">Interesse</div><div class="value" id="sInteresse">0</div><div class="max">/10</div></div>
+                    </div>
+                    <div style="position: relative; height: 200px; margin-top: 0.5rem;">
+                        <canvas id="chartRadar"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid 2 colunas -->
+            <div class="grid-2">
+                <div class="glass-card">
+                    <div class="section-title"><i class="ph ph-wrench ph-bold ph-primary"></i> Serviços mais procurados</div>
+                    <div class="rank-list" id="servicosRank">
+                        <div class="rank-item"><span class="rank-label">Website</span><div class="rank-bar"><div class="fill" style="width:0%"></div></div><span class="rank-value" id="servWebsite">0</span></div>
+                        <div class="rank-item"><span class="rank-label">Sistema</span><div class="rank-bar"><div class="fill" style="width:0%"></div></div><span class="rank-value" id="servSistema">0</span></div>
+                        <div class="rank-item"><span class="rank-label">Automação</span><div class="rank-bar"><div class="fill" style="width:0%"></div></div><span class="rank-value" id="servAutomacao">0</span></div>
+                        <div class="rank-item"><span class="rank-label">IA</span><div class="rank-bar"><div class="fill" style="width:0%"></div></div><span class="rank-value" id="servIA">0</span></div>
+                        <div class="rank-item"><span class="rank-label">Loja Online</span><div class="rank-bar"><div class="fill" style="width:0%"></div></div><span class="rank-value" id="servLoja">0</span></div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="section-title"><i class="ph ph-clock ph-bold ph-primary"></i> Últimos leads</div>
+                    <div class="recent-list" id="recentList">
+                        <div class="recent-item"><span class="time">--</span><span class="name">Nenhum lead recente</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dores mais frequentes -->
+            <div class="glass-card">
+                <div class="section-title"><i class="ph ph-warning ph-bold ph-primary"></i> Dores mais frequentes</div>
+                <div id="doresFrequentes" style="display:flex; flex-wrap:wrap; gap:0.3rem;">
+                    <span style="color:rgba(255,255,255,0.3); font-size:0.8rem;">Nenhum dado ainda</span>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

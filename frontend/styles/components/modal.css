@@ -1,0 +1,37 @@
+/* ========================================
+   MODAL
+   ======================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.white-theme .modal-content {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.white-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}

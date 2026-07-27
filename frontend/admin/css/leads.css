@@ -1,0 +1,223 @@
+/* ========================================
+   LEADS SPECIFIC STYLES
+   ======================================== */
+
+.filtros-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.filtros-row select,
+.filtros-row input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.7rem;
+    color: #fff;
+    font-size: 0.8rem;
+    min-width: 120px;
+}
+
+.filtros-row .btn {
+    background: rgba(139, 92, 246, 0.12);
+    border: none;
+    color: #8B5CF6;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.filtros-row .btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+}
+
+body.white-theme .filtros-row select,
+body.white-theme .filtros-row input {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(0, 0, 0, 0.06);
+    color: #1A1A1A;
+}
+
+.lead-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+}
+
+.lead-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.lead-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(139, 92, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+.lead-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.lead-card .name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.lead-card .company {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.lead-card .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0.4rem 0;
+}
+
+.lead-card .tags .tag {
+    font-size: 0.6rem;
+    background: rgba(139, 92, 246, 0.08);
+    padding: 0.1rem 0.4rem;
+    border-radius: 9999px;
+    color: #8B5CF6;
+}
+
+.lead-card .tags .tag-whatsapp {
+    background: rgba(37, 211, 102, 0.08);
+    color: #25D366;
+}
+
+.lead-card .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.lead-card .footer .score {
+    font-weight: 700;
+    color: #8B5CF6;
+    font-size: 0.9rem;
+}
+
+.lead-card .footer .click-hint {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.15);
+}
+
+body.white-theme .lead-card {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+body.white-theme .lead-card:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+body.white-theme .lead-card .company {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* Modal de detalhes */
+.modal-detalhes {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.5rem;
+}
+
+.modal-detalhes.active {
+    display: flex;
+}
+
+.modal-detalhes .modal-box {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1.5rem;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+.modal-detalhes .modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-detalhes .modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+body.white-theme .modal-detalhes .modal-box {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+body.white-theme .modal-detalhes .modal-close {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+body.white-theme .modal-detalhes .modal-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1A1A1A;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 768px) {
+    .lead-grid {
+        grid-template-columns: 1fr;
+    }
+    .filtros-row select,
+    .filtros-row input {
+        min-width: 80px;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.5rem;
+    }
+    .modal-detalhes .modal-box {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+}

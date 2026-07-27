@@ -1,0 +1,44 @@
+/* ========================================
+   LEAD CARD
+   ======================================== */
+
+.lead-card {
+  border-radius: 1rem;
+  padding: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.lead-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(139, 92, 246, 0.15);
+  transform: translateX(4px);
+}
+
+body.white-theme .lead-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.white-theme .lead-card:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Score Category */
+.score-category {
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.score-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #8B5CF6;
+}

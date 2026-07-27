@@ -1,0 +1,76 @@
+# Dependências
+node_modules/
+package-lock.json
+yarn.lock
+
+# Arquivos de banco de dados (mantém estrutura mas não dados)
+backend/database/*.json
+!backend/database/.gitkeep
+backend/logs/*.json
+!backend/logs/.gitkeep
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.production
+
+# Arquivos de build
+dist/
+build/
+*.log
+*.tmp
+
+# Cache
+.cache/
+.npm/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Sistemas operacionais
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de backup
+*.bak
+*.backup
+backups/
+*.tar.gz
+*.zip
+
+# Testes
+coverage/
+.nyc_output/
+
+# Arquivos temporários
+tmp/
+temp/
+*.temp
+
+# Frontend
+frontend/styles/output.css
+!frontend/styles/output.css
+
+# Scripts de deploy
+*.sh
+!start.sh
+
+# Notas
+TODO.md
+NOTES.md

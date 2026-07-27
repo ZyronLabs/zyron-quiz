@@ -1,0 +1,59 @@
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn-primary {
+  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  border-radius: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-secondary {
+  font-weight: 500;
+  padding: 0.875rem 2rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+}

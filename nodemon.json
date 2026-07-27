@@ -1,0 +1,17 @@
+{
+  "ignore": [
+    "backend/database/*.json",
+    "backend/logs/*.json",
+    "node_modules",
+    "frontend"
+  ],
+  "watch": [
+    "backend"
+  ],
+  "ext": "js,json",
+  "delay": 1000,
+  "verbose": false,
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

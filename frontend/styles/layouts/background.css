@@ -1,0 +1,94 @@
+/* ========================================
+   ANIMATED BACKGROUND E GLOW ORBS
+   ======================================== */
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: -1;
+  animation: floatBg 20s ease-in-out infinite;
+}
+
+body.dark-theme::before {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(109, 40, 217, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+}
+
+body.white-theme::before {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(109, 40, 217, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+}
+
+/* Glow Orbs */
+.glow-orbe {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body.dark-theme .glow-orbe-1 {
+  width: 300px;
+  height: 300px;
+  background: #8B5CF6;
+  top: -100px;
+  right: -100px;
+  animation: floatGlow 15s ease-in-out infinite;
+}
+
+body.dark-theme .glow-orbe-2 {
+  width: 400px;
+  height: 400px;
+  background: #6D28D9;
+  bottom: -150px;
+  left: -150px;
+  animation: floatGlow 20s ease-in-out infinite reverse;
+}
+
+body.dark-theme .glow-orbe-3 {
+  width: 200px;
+  height: 200px;
+  background: #a78bfa;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseGlow 8s ease-in-out infinite;
+}
+
+body.white-theme .glow-orbe-1 {
+  width: 200px;
+  height: 200px;
+  background: rgba(139, 92, 246, 0.2);
+  top: -100px;
+  right: -100px;
+  animation: floatGlow 15s ease-in-out infinite;
+}
+
+body.white-theme .glow-orbe-2 {
+  width: 300px;
+  height: 300px;
+  background: rgba(109, 40, 217, 0.15);
+  bottom: -150px;
+  left: -150px;
+  animation: floatGlow 20s ease-in-out infinite reverse;
+}
+
+body.white-theme .glow-orbe-3 {
+  width: 150px;
+  height: 150px;
+  background: rgba(139, 92, 246, 0.15);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseGlow 8s ease-in-out infinite;
+}

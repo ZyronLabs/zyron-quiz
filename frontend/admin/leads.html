@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leads - Zyron Labs</title>
+    <link href="../styles/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="css/common.css" rel="stylesheet">
+    <link href="css/leads.css" rel="stylesheet">
+</head>
+<body class="dark-theme">
+    <div class="glow-orbe glow-orbe-1"></div>
+    <div class="glow-orbe glow-orbe-2"></div>
+    <div class="glow-orbe glow-orbe-3"></div>
+
+    <!-- Header -->
+    <header class="header-zyron">
+        <div class="container flex-between">
+            <a href="/" class="logo">
+                <img src="../assets/logo.png" alt="Zyron Labs" style="height: 40px; width: auto;">
+                <span class="logo-text">Zyron Labs</span>
+            </a>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+                    <div class="toggle-track">
+                        <div class="toggle-thumb" id="themeThumb"><i class="ph ph-moon ph-bold"></i></div>
+                    </div>
+                </button>
+                <button class="btn-logout" onclick="logout()"><i class="ph ph-sign-out ph-bold"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-wrap">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-section">Menu</div>
+            <a class="nav-item" href="/admin/dashboard.html">
+                <i class="ph ph-chart-pie ph-bold"></i> Dashboard
+            </a>
+            <a class="nav-item active" href="/admin/leads.html">
+                <i class="ph ph-users ph-bold"></i> Leads
+                <span class="badge-nav" id="sidebarLeads">0</span>
+            </a>
+            <a class="nav-item" href="/admin/analytics.html">
+                <i class="ph ph-chart-bar ph-bold"></i> Analytics
+            </a>
+            <div class="nav-divider"></div>
+            <div class="nav-section">Filtros Rápidos</div>
+            <a class="nav-item" href="#" onclick="filtrarStatus('novo')">
+                <i class="ph ph-circle ph-bold" style="color:#34d399;"></i> Novos
+            </a>
+            <a class="nav-item" href="#" onclick="filtrarStatus('contactado')">
+                <i class="ph ph-circle ph-bold" style="color:#fbbf24;"></i> Contactados
+            </a>
+            <a class="nav-item" href="#" onclick="filtrarStatus('cliente')">
+                <i class="ph ph-circle ph-bold" style="color:#34d399;"></i> Clientes
+            </a>
+        </aside>
+
+        <!-- Conteúdo -->
+        <main class="main-content">
+            <div class="glass-card">
+                <div class="section-title">
+                    <i class="ph ph-users ph-bold ph-primary"></i> Leads
+                </div>
+                <div class="filtros-row">
+                    <select id="filtroStatus">
+                        <option value="">Todos os status</option>
+                        <option value="novo">Novo</option>
+                        <option value="contactado">Contactado</option>
+                        <option value="reuniao_marcada">Reunião</option>
+                        <option value="proposta_enviada">Proposta</option>
+                        <option value="cliente">Cliente</option>
+                        <option value="perdido">Perdido</option>
+                    </select>
+                    <select id="filtroSegmento">
+                        <option value="">Todos segmentos</option>
+                        <option value="Restaurante">Restaurante</option>
+                        <option value="Clínica">Clínica</option>
+                        <option value="Escola">Escola</option>
+                        <option value="Loja">Loja</option>
+                        <option value="Serviços">Serviços</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                    <select id="filtroNivel">
+                        <option value="">Todos níveis</option>
+                        <option value="Inicial">Inicial</option>
+                        <option value="Intermediário">Intermediário</option>
+                        <option value="Avançado">Avançado</option>
+                    </select>
+                    <button class="btn" onclick="aplicarFiltros()"><i class="ph ph-funnel ph-bold"></i> Filtrar</button>
+                    <button class="btn" onclick="limparFiltros()"><i class="ph ph-x ph-bold"></i> Limpar</button>
+                    <button class="btn" onclick="exportarCSV()"><i class="ph ph-file-csv ph-bold"></i> CSV</button>
+                </div>
+                <div id="leadsGrid" class="lead-grid"></div>
+                <div id="noLeads" style="display:none; text-align:center; padding:2rem; color:rgba(255,255,255,0.3);">
+                    <i class="ph ph-inbox ph-2xl" style="display:block; margin-bottom:0.5rem;"></i>
+                    <p>Nenhum lead encontrado.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Detalhes -->
+    <div class="modal-detalhes" id="modalDetalhes" onclick="fecharModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="fecharModal()"><i class="ph ph-x ph-bold"></i></button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/leads.js"></script>
+</body>
+</html>

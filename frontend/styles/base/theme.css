@@ -1,0 +1,194 @@
+/* ========================================
+   TEMA DARK E WHITE
+   ======================================== */
+
+/* ----- DARK THEME (Padrão) ----- */
+body.dark-theme {
+  background: #0A0A0A;
+  color: #FFFFFF;
+}
+
+body.dark-theme .glass-card,
+body.dark-theme .glass-card-glow,
+body.dark-theme .stat-card,
+body.dark-theme .lead-card,
+body.dark-theme .score-category,
+body.dark-theme .modal-content {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-theme .input-zyron {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+body.dark-theme .input-zyron::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-theme .input-zyron option {
+  background: #1a1a1a;
+  color: #FFFFFF;
+}
+
+body.dark-theme .header-zyron {
+  background: rgba(10, 10, 10, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+body.dark-theme .header-zyron .logo-text {
+  color: #FFFFFF;
+}
+
+body.dark-theme .text-white-50 { color: rgba(255, 255, 255, 0.5); }
+body.dark-theme .text-white-70 { color: rgba(255, 255, 255, 0.7); }
+body.dark-theme .text-white-30 { color: rgba(255, 255, 255, 0.3); }
+body.dark-theme .bg-white-5 { background: rgba(255, 255, 255, 0.05); }
+body.dark-theme .bg-white-10 { background: rgba(255, 255, 255, 0.1); }
+body.dark-theme .stat-label { color: rgba(255, 255, 255, 0.5); }
+body.dark-theme .modal-overlay { background: rgba(0, 0, 0, 0.7); }
+
+body.dark-theme select.input-zyron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.3)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+body.dark-theme .lead-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-theme .progress-bar {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .theme-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .theme-toggle .toggle-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ----- WHITE THEME ----- */
+body.white-theme {
+  background: #F5F5F5;
+  color: #1A1A1A;
+}
+
+body.white-theme .glass-card,
+body.white-theme .glass-card-glow,
+body.white-theme .stat-card,
+body.white-theme .lead-card,
+body.white-theme .score-category,
+body.white-theme .modal-content {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+body.white-theme .glass-card:hover,
+body.white-theme .glass-card-glow:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+body.white-theme .glass-card,
+body.white-theme .glass-card-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+body.white-theme .glass-card:hover,
+body.white-theme .glass-card-glow:hover {
+  box-shadow: 0 8px 40px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+body.white-theme .input-zyron {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1A1A1A;
+}
+
+body.white-theme .input-zyron::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+body.white-theme .input-zyron:focus {
+  border-color: #8B5CF6;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+}
+
+body.white-theme .input-zyron option {
+  background: #FFFFFF;
+  color: #1A1A1A;
+}
+
+body.white-theme .header-zyron {
+  background: rgba(245, 245, 245, 0.9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body.white-theme .header-zyron .logo-text {
+  color: #1A1A1A;
+}
+
+body.white-theme .text-white-50 { color: rgba(0, 0, 0, 0.5); }
+body.white-theme .text-white-70 { color: rgba(0, 0, 0, 0.7); }
+body.white-theme .text-white-30 { color: rgba(0, 0, 0, 0.3); }
+body.white-theme .bg-white-5 { background: rgba(0, 0, 0, 0.03); }
+body.white-theme .bg-white-10 { background: rgba(0, 0, 0, 0.06); }
+body.white-theme .stat-label { color: rgba(0, 0, 0, 0.5); }
+body.white-theme .modal-overlay { background: rgba(0, 0, 0, 0.4); }
+
+body.white-theme select.input-zyron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(0,0,0,0.3)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+body.white-theme .lead-card:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.white-theme .progress-bar {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.white-theme .btn-secondary {
+  color: #1A1A1A;
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.white-theme .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+body.white-theme .theme-toggle {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.white-theme .theme-toggle .toggle-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.white-theme .modal-content {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.white-theme .score-category {
+  border-color: rgba(0, 0, 0, 0.06);
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Zyron Labs</title>
+    <link href="../styles/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="css/common.css" rel="stylesheet">
+    <link href="css/analytics.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+    <div class="glow-orbe glow-orbe-1"></div>
+    <div class="glow-orbe glow-orbe-2"></div>
+    <div class="glow-orbe glow-orbe-3"></div>
+
+    <!-- Header -->
+    <header class="header-zyron">
+        <div class="container flex-between">
+            <a href="/" class="logo">
+                <img src="../assets/logo.png" alt="Zyron Labs" style="height: 40px; width: auto;">
+            </a>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+                    <div class="toggle-track">
+                        <div class="toggle-thumb" id="themeThumb"><i class="ph ph-moon ph-bold"></i></div>
+                    </div>
+                </button>
+                <button class="btn-logout" onclick="logout()"><i class="ph ph-sign-out ph-bold"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-wrap">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-section">Menu</div>
+            <a class="nav-item" href="/admin/dashboard.html">
+                <i class="ph ph-chart-pie ph-bold"></i> Dashboard
+            </a>
+            <a class="nav-item" href="/admin/leads.html">
+                <i class="ph ph-users ph-bold"></i> Leads
+            </a>
+            <a class="nav-item active" href="/admin/analytics.html">
+                <i class="ph ph-chart-bar ph-bold"></i> Analytics
+            </a>
+        </aside>
+
+        <!-- Conteúdo -->
+        <main class="main-content">
+
+            <!-- Grid 2 colunas: Segmentos + Leads por dia -->
+            <div class="grid-2">
+                <!-- Segmentos -->
+                <div class="glass-card">
+                    <div class="section-title"><i class="ph ph-buildings ph-bold ph-primary"></i> Segmentos</div>
+                    <div style="position: relative; height: 200px;">
+                        <canvas id="chartSegmentos"></canvas>
+                    </div>
+                    <div id="segmentosList" style="margin-top: 1rem;"></div>
+                </div>
+
+                <!-- Leads por dia -->
+                <div class="glass-card">
+                    <div class="section-title"><i class="ph ph-calendar ph-bold ph-primary"></i> Leads por dia</div>
+                    <div id="leadsPorDia"></div>
+                </div>
+            </div>
+
+            <!-- Grid 2 colunas: Tempo médio + Origens -->
+            <div class="grid-2">
+                <!-- Tempo médio -->
+                <div class="glass-card">
+                    <div class="section-title"><i class="ph ph-clock ph-bold ph-primary"></i> Tempo médio até contacto</div>
+                    <div id="tempoMedio" style="font-size:1.5rem; font-weight:700; color:#8B5CF6;">Carregando...</div>
+                </div>
+
+                <!-- Origens -->
+                <div class="glass-card">
+                    <div class="section-title"><i class="ph ph-arrow-circle-down ph-bold ph-primary"></i> Origem do lead</div>
+                    <div style="position: relative; height: 180px;">
+                        <canvas id="chartOrigens"></canvas>
+                    </div>
+                    <div id="origens" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top: 0.5rem;"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/analytics.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+
+/* ========================================
+   PHOSPHOR ICONS
+   ======================================== */
+@import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css');
+@import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css');
+@import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css');
+@import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/thin/style.css');
+@import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css');
+
+/* Classe de ícone consistente */
+.ph {
+  font-size: 1.25rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ph-sm { font-size: 1rem; }
+.ph-md { font-size: 1.5rem; }
+.ph-lg { font-size: 2rem; }
+.ph-xl { font-size: 2.5rem; }
+.ph-2xl { font-size: 3rem; }
+
+/* Cor dos ícones */
+.ph-primary { color: #8B5CF6; }
+.ph-white { color: #FFFFFF; }
+.ph-dark { color: #1A1A1A; }
+.ph-success { color: #34d399; }
+.ph-warning { color: #fbbf24; }
+.ph-danger { color: #f87171; }
+.ph-info { color: #60a5fa; }
+.ph-muted { color: rgba(255, 255, 255, 0.5); }
+
+body.white-theme .ph-muted { color: rgba(0, 0, 0, 0.5); }

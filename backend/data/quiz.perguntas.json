@@ -1,0 +1,122 @@
+[
+  {
+    "id": "q1",
+    "categoria": "Presença Digital",
+    "pergunta": "Seu negócio possui presença online?",
+    "tipo": "single",
+    "opcoes": [
+      "Não possui presença online",
+      "Apenas WhatsApp/Facebook",
+      "Possui website",
+      "Website + estratégias digitais"
+    ]
+  },
+  {
+    "id": "q2",
+    "categoria": "Presença Digital",
+    "pergunta": "Como os clientes encontram seu negócio?",
+    "tipo": "single",
+    "opcoes": [
+      "Indicação",
+      "Redes sociais",
+      "Google",
+      "Website",
+      "Anúncios online"
+    ]
+  },
+  {
+    "id": "q3",
+    "categoria": "Gestão",
+    "pergunta": "Como você controla clientes e vendas atualmente?",
+    "tipo": "single",
+    "opcoes": [
+      "Papel/caderno",
+      "Excel",
+      "WhatsApp",
+      "Sistema próprio"
+    ]
+  },
+  {
+    "id": "q4",
+    "categoria": "Gestão",
+    "pergunta": "Você possui algum sistema para gerir o negócio?",
+    "tipo": "single",
+    "opcoes": [
+      "Não",
+      "Uso ferramentas básicas",
+      "Tenho um sistema"
+    ]
+  },
+  {
+    "id": "q5",
+    "categoria": "Automação",
+    "pergunta": "Quanto tempo sua equipe perde em tarefas repetitivas?",
+    "tipo": "single",
+    "opcoes": [
+      "Pouco",
+      "Algumas horas por semana",
+      "Muitas horas"
+    ]
+  },
+  {
+    "id": "q6",
+    "categoria": "Automação",
+    "pergunta": "Quais são os maiores desafios atualmente?",
+    "tipo": "multiple",
+    "opcoes": [
+      "Atrair clientes",
+      "Organizar vendas",
+      "Controlar informações",
+      "Automatizar tarefas",
+      "Melhorar atendimento"
+    ]
+  },
+  {
+    "id": "q7",
+    "categoria": "Crescimento",
+    "pergunta": "Que tipo de solução seria mais útil para você?",
+    "tipo": "multiple",
+    "opcoes": [
+      "Website profissional",
+      "Sistema de gestão",
+      "Loja online",
+      "Automação com IA",
+      "Aplicativo"
+    ]
+  },
+  {
+    "id": "q8",
+    "categoria": "Crescimento",
+    "pergunta": "Qual o tamanho do seu negócio?",
+    "tipo": "single",
+    "opcoes": [
+      "Freelancer",
+      "Pequena empresa",
+      "Média empresa",
+      "Grande empresa"
+    ]
+  },
+  {
+    "id": "q9",
+    "categoria": "Interesse",
+    "pergunta": "Você teria interesse em automatizar processos?",
+    "tipo": "single",
+    "opcoes": [
+      "Sim",
+      "Talvez",
+      "Não"
+    ]
+  },
+  {
+    "id": "q10",
+    "categoria": "Interesse",
+    "pergunta": "Qual investimento pretende fazer em tecnologia?",
+    "tipo": "single",
+    "opcoes": [
+      "Ainda estou pesquisando",
+      "Até 10.000 MZN",
+      "10.000-50.000 MZN",
+      "Mais de 50.000 MZN"
+    ]
+  }
+]

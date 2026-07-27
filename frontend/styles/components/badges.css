@@ -1,0 +1,73 @@
+/* ========================================
+   BADGES
+   ======================================== */
+
+.badge-nivel {
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.badge-inicial {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-intermediario {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.badge-avancado {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+body.white-theme .badge-inicial {
+  background: rgba(239, 68, 68, 0.10);
+  color: #dc2626;
+}
+
+body.white-theme .badge-intermediario {
+  background: rgba(251, 191, 36, 0.10);
+  color: #d97706;
+}
+
+body.white-theme .badge-avancado {
+  background: rgba(52, 211, 153, 0.10);
+  color: #059669;
+}
+
+/* STATUS BADGES */
+.badge-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-novo { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+.status-contactado { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.status-reuniao { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+.status-proposta { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+.status-cliente { background: rgba(52, 211, 153, 0.25); color: #34d399; }
+.status-perdido { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+body.white-theme .status-novo { background: rgba(52, 211, 153, 0.10); color: #059669; }
+body.white-theme .status-contactado { background: rgba(251, 191, 36, 0.10); color: #d97706; }
+body.white-theme .status-reuniao { background: rgba(251, 146, 60, 0.10); color: #ea580c; }
+body.white-theme .status-proposta { background: rgba(167, 139, 250, 0.10); color: #7c3aed; }
+body.white-theme .status-cliente { background: rgba(52, 211, 153, 0.15); color: #059669; }
+body.white-theme .status-perdido { background: rgba(239, 68, 68, 0.10); color: #dc2626; }
