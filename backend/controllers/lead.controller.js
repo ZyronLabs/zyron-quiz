@@ -2,8 +2,29 @@ const leadService = require('../services/lead.service');
 const scoringService = require('../services/scoring.service');
 const rulesService = require('../services/rules.service');
 const webhookService = require('../services/webhook.service');
-const budgetService = require('../services/budget.service');
 const { validarWhatsApp, validarEmail } = require('../utils/validation');
+
+// Importar budget service com fallback
+let budgetService = null;
+try {
+    budgetService = require('../services/budget.service');
+} catch (error) {
+    console.warn('⚠️ budget.service não encontrado, usando fallback');
+    budgetService = {
+        calcularOrcamento: (lead) => ({
+            total: 0,
+            detalhes: [],
+            recomendacoes: ['Orçamento não disponível'],
+            nivel: 'basico'
+        }),
+        calcularEstatisticasOrcamento: (leads) => ({
+            totalOrcamento: 0,
+            media: 0,
+            count: 0,
+            niveis: { start: 0, basico: 0, profissional: 0, enterprise: 0 }
+        })
+    };
+}
 
 exports.criarLead = async (req, res) => {
   try {
@@ -71,10 +92,17 @@ exports.submeterQuiz = async (req, res) => {
 
     const diagnostico = scoringService.calcularPontuacao(respostasMapeadas);
     const necessidades = rulesService.analisarRespostas(respostasMapeadas);
-    const orcamento = budgetService.calcularOrcamento({
-      respostas_quiz: respostasMapeadas,
-      diagnostico: diagnostico
-    });
+    
+    // Calcular orçamento com fallback
+    let orcamento = { total: 0, detalhes: [], recomendacoes: [], nivel: 'basico' };
+    try {
+        orcamento = budgetService.calcularOrcamento({
+            respostas_quiz: respostasMapeadas,
+            diagnostico: diagnostico
+        });
+    } catch (error) {
+        console.error('❌ Erro ao calcular orçamento:', error.message);
+    }
 
     const leadAtualizado = {
       diagnostico: {
