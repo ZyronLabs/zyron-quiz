@@ -2,43 +2,48 @@ const leadService = require('../services/lead.service');
 const scoringService = require('../services/scoring.service');
 const rulesService = require('../services/rules.service');
 const webhookService = require('../services/webhook.service');
+const logger = require('../services/logger.service');
 const { validarWhatsApp, validarEmail } = require('../utils/validation');
 
-// Importar budget service com fallback
 let budgetService = null;
 try {
-    budgetService = require('../services/budget.service');
+  budgetService = require('../services/budget.service');
 } catch (error) {
-    console.warn('⚠️ budget.service não encontrado, usando fallback');
-    budgetService = {
-        calcularOrcamento: (lead) => ({
-            total: 0,
-            detalhes: [],
-            recomendacoes: ['Orçamento não disponível'],
-            nivel: 'basico'
-        }),
-        calcularEstatisticasOrcamento: (leads) => ({
-            totalOrcamento: 0,
-            media: 0,
-            count: 0,
-            niveis: { start: 0, basico: 0, profissional: 0, enterprise: 0 }
-        })
-    };
+  logger.warn('⚠️ budget.service não encontrado, usando fallback');
+  budgetService = {
+    calcularOrcamento: (lead) => ({
+      total: 0,
+      detalhes: [],
+      recomendacoes: ['Orçamento não disponível'],
+      nivel: 'basico'
+    }),
+    calcularEstatisticasOrcamento: (leads) => ({
+      totalOrcamento: 0,
+      media: 0,
+      count: 0,
+      niveis: { start: 0, basico: 0, profissional: 0, enterprise: 0 }
+    })
+  };
 }
 
 exports.criarLead = async (req, res) => {
   try {
+    logger.info('📥 Criando lead', { body: req.body });
+    
     const { nome, empresa, whatsapp, email, segmento } = req.body;
 
     if (!nome || !whatsapp || !email) {
+      logger.warn('⚠️ Campos obrigatórios faltando', { nome, whatsapp, email });
       return res.status(400).json({ error: 'Nome, WhatsApp e Email são obrigatórios' });
     }
 
     if (!validarWhatsApp(whatsapp)) {
+      logger.warn('⚠️ WhatsApp inválido', { whatsapp });
       return res.status(400).json({ error: 'WhatsApp inválido. Use o formato +258XXXXXXXXX' });
     }
 
     if (!validarEmail(email)) {
+      logger.warn('⚠️ Email inválido', { email });
       return res.status(400).json({ error: 'Email inválido' });
     }
 
@@ -50,6 +55,8 @@ exports.criarLead = async (req, res) => {
 
     const lead = await leadService.createLead(leadData);
     
+    logger.info(`✅ Lead criado com sucesso: ${lead.id}`, { leadId: lead.id, nome });
+    
     res.status(201).json({
       success: true,
       leadId: lead.id,
@@ -57,7 +64,7 @@ exports.criarLead = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro ao criar lead:', error);
+    logger.error('❌ Erro ao criar lead', error, { body: req.body });
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
@@ -66,14 +73,16 @@ exports.submeterQuiz = async (req, res) => {
   try {
     const { leadId, respostas } = req.body;
 
-    console.log('📥 Recebendo quiz para lead:', leadId);
+    logger.info(`📥 Submetendo quiz para lead: ${leadId}`, { leadId });
 
     if (!leadId || !respostas) {
+      logger.warn('⚠️ leadId ou respostas faltando', { leadId });
       return res.status(400).json({ error: 'leadId e respostas são obrigatórios' });
     }
 
     const lead = await leadService.getLeadById(leadId);
     if (!lead) {
+      logger.warn(`⚠️ Lead não encontrado: ${leadId}`);
       return res.status(404).json({ error: 'Lead não encontrado' });
     }
 
@@ -93,15 +102,14 @@ exports.submeterQuiz = async (req, res) => {
     const diagnostico = scoringService.calcularPontuacao(respostasMapeadas);
     const necessidades = rulesService.analisarRespostas(respostasMapeadas);
     
-    // Calcular orçamento com fallback
     let orcamento = { total: 0, detalhes: [], recomendacoes: [], nivel: 'basico' };
     try {
-        orcamento = budgetService.calcularOrcamento({
-            respostas_quiz: respostasMapeadas,
-            diagnostico: diagnostico
-        });
+      orcamento = budgetService.calcularOrcamento({
+        respostas_quiz: respostasMapeadas,
+        diagnostico: diagnostico
+      });
     } catch (error) {
-        console.error('❌ Erro ao calcular orçamento:', error.message);
+      logger.error('❌ Erro ao calcular orçamento', error);
     }
 
     const leadAtualizado = {
@@ -155,9 +163,11 @@ exports.submeterQuiz = async (req, res) => {
 
     setTimeout(() => {
       webhookService.enviarDados(webhookData).catch(err => {
-        console.error('Erro no webhook:', err.message);
+        logger.error('❌ Erro no webhook (assíncrono)', err);
       });
     }, 100);
+
+    logger.info(`✅ Quiz finalizado para lead: ${leadId}`, { leadId, pontuacao: diagnostico.total });
 
     return res.status(200).json({
       success: true,
@@ -174,7 +184,7 @@ exports.submeterQuiz = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Erro ao submeter quiz:', error);
+    logger.error('❌ Erro ao submeter quiz', error, { body: req.body });
     res.status(500).json({ error: 'Erro interno do servidor: ' + error.message });
   }
 };
@@ -186,7 +196,7 @@ exports.getLeads = async (req, res) => {
     const leads = await leadService.filterLeads(filtros);
     res.json({ total: leads.length, leads });
   } catch (error) {
-    console.error('Erro ao buscar leads:', error);
+    logger.error('❌ Erro ao buscar leads', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
@@ -196,11 +206,12 @@ exports.getLeadById = async (req, res) => {
     const { id } = req.params;
     const lead = await leadService.getLeadById(id);
     if (!lead) {
+      logger.warn(`⚠️ Lead não encontrado: ${id}`);
       return res.status(404).json({ error: 'Lead não encontrado' });
     }
     res.json(lead);
   } catch (error) {
-    console.error('Erro ao buscar lead:', error);
+    logger.error('❌ Erro ao buscar lead', error, { id: req.params.id });
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
@@ -209,13 +220,16 @@ exports.updateStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, observacoes } = req.body;
+    
     if (!status) {
       return res.status(400).json({ error: 'Status é obrigatório' });
     }
+    
     const lead = await leadService.updateLeadStatus(id, status, observacoes);
+    logger.info(`✅ Status atualizado: ${id} → ${status}`);
     res.json({ success: true, lead });
   } catch (error) {
-    console.error('Erro ao atualizar status:', error);
+    logger.error('❌ Erro ao atualizar status', error, { id: req.params.id, body: req.body });
     res.status(500).json({ error: error.message || 'Erro interno do servidor' });
   }
 };
@@ -225,7 +239,7 @@ exports.getStats = async (req, res) => {
     const stats = await leadService.getStats();
     res.json(stats);
   } catch (error) {
-    console.error('Erro ao buscar estatísticas:', error);
+    logger.error('❌ Erro ao buscar estatísticas', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
