@@ -2,7 +2,7 @@
    COMMON ADMIN SCRIPTS
    ======================================== */
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = "https://zyron-quiz.onrender.com/api";
 
 // ===== THEME =====
 function toggleTheme() {
