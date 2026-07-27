@@ -173,24 +173,24 @@ class WebhookService {
 
   determinarCanal(segmento, pontuacao, solucoes) {
     const canalMap = {
-      'Restaurante': 'Gastronomia',
-      'Clínica': 'Saúde',
-      'Escola': 'Educação',
-      'Loja': 'Comércio',
-      'Serviços': 'Serviços',
-      'Outro': 'Geral'
+      'Restaurante': '🍽️ Gastronomia',
+      'Clínica': '🏥 Saúde',
+      'Escola': '📚 Educação',
+      'Loja': '🛍️ Comércio',
+      'Serviços': '💼 Serviços',
+      'Outro': '📌 Geral'
     };
 
-    let canal = canalMap[segmento] || 'Geral';
+    let canal = canalMap[segmento] || '📌 Geral';
 
     if (pontuacao > 70) {
-      canal = 'Tech Avançado';
+      canal = '🚀 Tech Avançado';
     } else if (pontuacao > 40) {
-      canal = 'Digitalização';
+      canal = '📈 Digitalização';
     }
 
     if (solucoes.some(s => s.includes('IA') || s.includes('Automação'))) {
-      canal = 'Automação & IA';
+      canal = '🤖 Automação & IA';
     }
 
     return canal;

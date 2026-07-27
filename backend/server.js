@@ -58,3 +58,6 @@ app.listen(PORT, () => {
   console.log(`💾 Database: ${dbType === 'postgres' ? 'PostgreSQL' : 'JSON'}`);
   console.log(`🔗 Webhook: ${process.env.CHEGOU_WEBHOOK_SECRET ? '✅ Configurado' : '❌ Não configurado'}`);
 });
+// Dashboard refresh
+const dashboardRoutes = require('./routes/dashboard.routes');
+app.use('/api/dashboard', dashboardRoutes);
