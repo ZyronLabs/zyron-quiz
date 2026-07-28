@@ -88,3 +88,6 @@ app.listen(PORT, () => {
   logger.info(`💾 Database: ${dbType === 'postgres' ? 'PostgreSQL' : 'JSON'}`);
   logger.info(`🔗 Webhook: ${process.env.CHEGOU_WEBHOOK_SECRET ? '✅ Configurado' : '❌ Não configurado'}`);
 });
+// Rotas de administração do banco
+const dbAdminRoutes = require('./routes/db-admin.routes');
+app.use('/api/db-admin', dbAdminRoutes);

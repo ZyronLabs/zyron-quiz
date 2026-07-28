@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB Viewer - Zyron Labs</title>
+    <link href="../styles/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="css/common.css" rel="stylesheet">
+    <style>
+        .db-container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .db-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .db-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .db-table th { text-align: left; padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); font-weight: 600; }
+        .db-table td { padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .db-table tr:hover { background: rgba(255,255,255,0.02); }
+        .db-table .id { font-family: monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+        .db-table .status { padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.65rem; }
+        .db-table .status-novo { background: rgba(52,211,153,0.15); color: #34d399; }
+        .db-table .status-contactado { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .db-table .status-cliente { background: rgba(52,211,153,0.25); color: #34d399; }
+        .btn-db { background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.1); color: #8B5CF6; padding: 0.4rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .btn-db:hover { background: rgba(139,92,246,0.2); transform: scale(1.02); }
+        .btn-db-danger { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.1); color: #f87171; }
+        .btn-db-danger:hover { background: rgba(239,68,68,0.2); }
+        .db-query-box { width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 0.5rem; color: #fff; font-family: monospace; font-size: 0.85rem; resize: vertical; min-height: 80px; }
+        .db-query-box:focus { outline: none; border-color: #8B5CF6; }
+        body.white-theme .db-card { background: rgba(255,255,255,0.5); border-color: rgba(0,0,0,0.04); }
+        body.white-theme .db-table th { color: rgba(0,0,0,0.4); }
+        body.white-theme .db-table td { border-color: rgba(0,0,0,0.03); }
+        body.white-theme .db-table tr:hover { background: rgba(0,0,0,0.02); }
+        body.white-theme .db-query-box { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.06); color: #1A1A1A; }
+        .json-view { background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+        body.white-theme .json-view { background: rgba(0,0,0,0.03); }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+        .gap-2 { gap: 0.5rem; }
+        .flex { display: flex; align-items: center; }
+        .text-sm { font-size: 0.8rem; }
+        .text-xs { font-size: 0.65rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .tag { background: rgba(139,92,246,0.08); padding: 0.1rem 0.4rem; border-radius: 9999px; font-size: 0.6rem; color: #8B5CF6; }
+        @media (max-width: 768px) { .db-table { font-size: 0.7rem; } .db-table th, .db-table td { padding: 0.3rem; } }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="glow-orbe glow-orbe-1"></div>
+    <div class="glow-orbe glow-orbe-2"></div>
+
+    <header class="header-zyron">
+        <div class="container flex-between">
+            <a href="/" class="logo"><img src="../assets/logo.png" alt="Zyron Labs" style="height:40px;width:auto;"></a>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()"><div class="toggle-track"><div class="toggle-thumb" id="themeThumb"><i class="ph ph-moon ph-bold"></i></div></div></button>
+                <button class="btn-logout" onclick="logout()"><i class="ph ph-sign-out ph-bold"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="db-container">
+        <h1 class="text-2xl font-bold mb-4"><i class="ph ph-database ph-bold ph-primary"></i> Database Viewer</h1>
+
+        <!-- Stats -->
+        <div class="db-card">
+            <div class="flex-between mb-2">
+                <h3><i class="ph ph-chart-bar ph-bold ph-primary"></i> Estatísticas</h3>
+                <button class="btn-db" onclick="carregarStats()"><i class="ph ph-arrows-clockwise ph-bold"></i> Atualizar</button>
+            </div>
+            <div id="dbStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.5rem;">
+                <span style="color:rgba(255,255,255,0.3);">Carregando...</span>
+            </div>
+        </div>
+
+        <!-- Tabelas -->
+        <div class="db-card">
+            <div class="flex-between mb-2">
+                <h3><i class="ph ph-table ph-bold ph-primary"></i> Tabelas</h3>
+                <div class="flex gap-2">
+                    <button class="btn-db" onclick="listarTabelas()"><i class="ph ph-arrows-clockwise ph-bold"></i> Listar</button>
+                    <button class="btn-db btn-db-danger" onclick="inserirTeste()"><i class="ph ph-plus ph-bold"></i> Inserir Teste</button>
+                </div>
+            </div>
+            <div id="tablesList"><span style="color:rgba(255,255,255,0.3);">Clique em "Listar" para ver as tabelas</span></div>
+        </div>
+
+        <!-- Conteúdo da Tabela -->
+        <div class="db-card" id="tableContentCard" style="display:none;">
+            <div class="flex-between mb-2">
+                <h3 id="tableTitle"><i class="ph ph-table ph-bold ph-primary"></i> Tabela: <span id="tableName">-</span></h3>
+                <div class="flex gap-2">
+                    <button class="btn-db" onclick="refreshTable()"><i class="ph ph-arrows-clockwise ph-bold"></i> Atualizar</button>
+                    <button class="btn-db btn-db-danger" onclick="fecharTabela()"><i class="ph ph-x ph-bold"></i> Fechar</button>
+                </div>
+            </div>
+            <div id="tableContent" style="overflow-x:auto;"><span style="color:rgba(255,255,255,0.3);">Selecione uma tabela</span></div>
+        </div>
+
+        <!-- SQL Query -->
+        <div class="db-card">
+            <h3 class="mb-2"><i class="ph ph-code ph-bold ph-primary"></i> SQL Query (SELECT apenas)</h3>
+            <textarea id="sqlQuery" class="db-query-box" placeholder="SELECT * FROM leads LIMIT 10;">SELECT * FROM leads LIMIT 10;</textarea>
+            <div class="flex gap-2 mt-2">
+                <button class="btn-db" onclick="executarSQL()"><i class="ph ph-play ph-bold"></i> Executar</button>
+                <button class="btn-db" onclick="document.getElementById('sqlQuery').value='SELECT * FROM leads LIMIT 10;'">Reset</button>
+            </div>
+            <div id="sqlResult" class="mt-2" style="display:none;">
+                <div class="json-view" id="sqlResultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://zyron-quiz.onrender.com/api';
+
+        function toggleTheme() {
+            const body = document.body;
+            const thumb = document.getElementById('themeThumb');
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                body.classList.add('white-theme');
+                localStorage.setItem('theme', 'white');
+                thumb.innerHTML = '<i class="ph ph-sun ph-bold"></i>';
+            } else {
+                body.classList.remove('white-theme');
+                body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+                thumb.innerHTML = '<i class="ph ph-moon ph-bold"></i>';
+            }
+        }
+
+        function loadTheme() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            const body = document.body;
+            const thumb = document.getElementById('themeThumb');
+            if (saved === 'white') {
+                body.classList.add('white-theme');
+                body.classList.remove('dark-theme');
+                if (thumb) thumb.innerHTML = '<i class="ph ph-sun ph-bold"></i>';
+            } else {
+                body.classList.add('dark-theme');
+                body.classList.remove('white-theme');
+                if (thumb) thumb.innerHTML = '<i class="ph ph-moon ph-bold"></i>';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = '/admin/login.html';
+        }
+
+        // ===== STATS =====
+        async function carregarStats() {
+            try {
+                const res = await fetch(`${API_URL}/db-admin/stats`);
+                const data = await res.json();
+                const stats = data.stats || {};
+                document.getElementById('dbStats').innerHTML = `
+                    <div style="background:rgba(255,255,255,0.02);padding:0.5rem;border-radius:0.5rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:700;color:#8B5CF6;">${stats.total_leads || 0}</div>
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Total Leads</div>
+                    </div>
+                    <div style="background:rgba(52,211,153,0.05);padding:0.5rem;border-radius:0.5rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:700;color:#34d399;">${stats.novos || 0}</div>
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Novos</div>
+                    </div>
+                    <div style="background:rgba(251,191,36,0.05);padding:0.5rem;border-radius:0.5rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:700;color:#fbbf24;">${stats.contactados || 0}</div>
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Contactados</div>
+                    </div>
+                    <div style="background:rgba(139,92,246,0.05);padding:0.5rem;border-radius:0.5rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:700;color:#8B5CF6;">${stats.quizzes_realizados || 0}</div>
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Quizzes</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.02);padding:0.5rem;border-radius:0.5rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:700;color:#a78bfa;">${stats.media_pontuacao || 0}</div>
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Média</div>
+                    </div>
+                `;
+            } catch(e) { console.error(e); }
+        }
+
+        // ===== TABELAS =====
+        async function listarTabelas() {
+            try {
+                const res = await fetch(`${API_URL}/db-admin/tables`);
+                const data = await res.json();
+                document.getElementById('tablesList').innerHTML = data.tables.map(t => `
+                    <span class="tag" style="cursor:pointer;padding:0.3rem 0.8rem;margin:0.2rem;display:inline-block;" onclick="verTabela('${t}')">
+                        📊 ${t}
+                    </span>
+                `).join('') || '<span style="color:rgba(255,255,255,0.3);">Nenhuma tabela encontrada</span>';
+            } catch(e) { console.error(e); }
+        }
+
+        // ===== VER TABELA =====
+        let currentTable = '';
+
+        async function verTabela(tableName) {
+            currentTable = tableName;
+            document.getElementById('tableName').textContent = tableName;
+            document.getElementById('tableContentCard').style.display = 'block';
+            await refreshTable();
+        }
+
+        async function refreshTable() {
+            if (!currentTable) return;
+            try {
+                const res = await fetch(`${API_URL}/db-admin/table/${currentTable}?limit=50`);
+                const data = await res.json();
+                
+                if (!data.data || data.data.length === 0) {
+                    document.getElementById('tableContent').innerHTML = `
+                        <div style="text-align:center;padding:2rem;color:rgba(255,255,255,0.3);">
+                            <i class="ph ph-inbox ph-2xl" style="display:block;margin-bottom:0.5rem;"></i>
+                            Nenhum registro na tabela <strong>${currentTable}</strong>
+                            <div class="mt-2"><button class="btn-db" onclick="inserirTeste()">Inserir lead de teste</button></div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const columns = Object.keys(data.data[0]);
+                let html = `<div class="text-xs text-white-30 mb-2">Total: ${data.total} registros | Mostrando ${data.data.length}</div>`;
+                html += `<table class="db-table"><thead><tr>`;
+                columns.forEach(col => {
+                    html += `<th>${col}</th>`;
+                });
+                html += `</tr></thead><tbody>`;
+                data.data.forEach(row => {
+                    html += `<tr>`;
+                    columns.forEach(col => {
+                        let val = row[col];
+                        if (val === null || val === undefined) val = '-';
+                        if (typeof val === 'object') val = JSON.stringify(val).substring(0, 50) + (JSON.stringify(val).length > 50 ? '...' : '');
+                        if (col === 'id') html += `<td class="id">${val}</td>`;
+                        else if (col === 'status') html += `<td><span class="status status-${val}">${val}</span></td>`;
+                        else html += `<td>${String(val).substring(0, 50)}${String(val).length > 50 ? '...' : ''}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+                html += `</tbody></table>`;
+                document.getElementById('tableContent').innerHTML = html;
+            } catch(e) {
+                console.error(e);
+                document.getElementById('tableContent').innerHTML = `<span style="color:#f87171;">❌ Erro: ${e.message}</span>`;
+            }
+        }
+
+        function fecharTabela() {
+            document.getElementById('tableContentCard').style.display = 'none';
+            currentTable = '';
+        }
+
+        // ===== INSERIR TESTE =====
+        async function inserirTeste() {
+            try {
+                const res = await fetch(`${API_URL}/db-admin/test-insert`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`✅ Lead de teste criado: ${data.lead.id}`);
+                    await carregarStats();
+                    if (currentTable) await refreshTable();
+                } else {
+                    alert('❌ Erro: ' + data.error);
+                }
+            } catch(e) { alert('❌ Erro: ' + e.message); }
+        }
+
+        // ===== EXECUTAR SQL =====
+        async function executarSQL() {
+            const query = document.getElementById('sqlQuery').value.trim();
+            if (!query) { alert('Digite uma query SQL'); return; }
+            if (!query.toUpperCase().startsWith('SELECT')) {
+                alert('⚠️ Apenas consultas SELECT são permitidas por segurança');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/db-admin/sql`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const data = await res.json();
+                const resultDiv = document.getElementById('sqlResult');
+                resultDiv.style.display = 'block';
+                document.getElementById('sqlResultContent').textContent = JSON.stringify(data.result || data, null, 2);
+            } catch(e) {
+                alert('❌ Erro: ' + e.message);
+            }
+        }
+
+        // Carregar stats inicial
+        carregarStats();
+    </script>
+</body>
+</html>
