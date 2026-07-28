@@ -9,24 +9,22 @@ let chartRadar = null;
 async function carregarDados() {
     try {
         console.log('🔄 Carregando dados...');
+        
+        // Buscar leads
         const res = await fetch(`${API_URL}/leads`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        console.log('📊 Dados recebidos:', data);
         
-        if (data.leads) {
-            allLeads = data.leads;
-        } else if (Array.isArray(data)) {
-            allLeads = data;
-        } else {
-            allLeads = [];
-        }
-        
+        // Extrair leads
+        allLeads = data.leads || [];
         console.log(`✅ ${allLeads.length} leads carregados`);
         
-        // Atualizar tudo
+        // Atualizar dashboard
         atualizarDashboard(allLeads);
         atualizarGraficos(allLeads, currentPeriod);
+        
+        // Atualizar sidebar
+        document.getElementById('sidebarLeads').textContent = allLeads.length;
     } catch (error) {
         console.error('❌ Erro ao carregar dados:', error);
         // Mostrar zeros
@@ -40,7 +38,7 @@ async function carregarDados() {
     }
 }
 
-// ===== FUNÇÕES AUXILIARES =====
+// ===== FUNÇÕES AUXILIARES PARA EXTRAIR DADOS =====
 function getNome(lead) {
     return lead.nome || lead.cliente?.nome || 'N/A';
 }
@@ -58,23 +56,35 @@ function getSegmento(lead) {
 }
 
 function getPontuacao(lead) {
-    return lead.pontuacao_total || lead.diagnostico?.pontuacao_total || 0;
+    // Tentar diferentes formas de obter a pontuação
+    if (lead.pontuacao_total !== undefined && lead.pontuacao_total !== null) return lead.pontuacao_total;
+    if (lead.diagnostico?.pontuacao_total !== undefined) return lead.diagnostico.pontuacao_total;
+    if (lead.pontuacao !== undefined) return lead.pontuacao;
+    return 0;
 }
 
 function getNivel(lead) {
-    return lead.nivel || lead.diagnostico?.nivel || 'N/A';
+    if (lead.nivel) return lead.nivel;
+    if (lead.diagnostico?.nivel) return lead.diagnostico.nivel;
+    return 'N/A';
 }
 
 function getCategorias(lead) {
-    return lead.categorias || lead.diagnostico?.categorias || null;
+    if (lead.categorias) return lead.categorias;
+    if (lead.diagnostico?.categorias) return lead.diagnostico.categorias;
+    return null;
 }
 
 function getNecessidades(lead) {
-    return lead.necessidades || lead.diagnostico?.necessidades || { dores: [], solucoes: [] };
+    if (lead.necessidades) return lead.necessidades;
+    if (lead.diagnostico?.necessidades) return lead.diagnostico.necessidades;
+    return { dores: [], solucoes: [] };
 }
 
 function getPrioridade(lead) {
-    return lead.prioridade || lead.comercial?.prioridade || 'media';
+    if (lead.prioridade) return lead.prioridade;
+    if (lead.comercial?.prioridade) return lead.comercial.prioridade;
+    return 'media';
 }
 
 // ===== SET PERIOD =====
@@ -102,9 +112,12 @@ function filtrarPorPeriodo(leads, period) {
 
 // ===== ATUALIZAR DASHBOARD =====
 function atualizarDashboard(leads) {
+    console.log('📊 Atualizando dashboard com', leads.length, 'leads');
+    
+    // Métricas principais
     const total = leads.length;
     const quizzes = leads.filter(l => getPontuacao(l) > 0).length;
-    const pontuacoes = leads.map(l => getPontuacao(l));
+    const pontuacoes = leads.map(l => getPontuacao(l)).filter(p => p > 0);
     const media = pontuacoes.length ? Math.round(pontuacoes.reduce((a, b) => a + b, 0) / pontuacoes.length) : 0;
     const prioritarios = leads.filter(l => getPrioridade(l) === 'alta' || getPontuacao(l) > 80).length;
     const clientes = leads.filter(l => l.status === 'cliente').length;
@@ -117,7 +130,7 @@ function atualizarDashboard(leads) {
         return acc;
     }, 0);
 
-    // Atualizar elementos
+    // Atualizar elementos do DOM
     document.getElementById('totalLeads').textContent = total;
     document.getElementById('totalQuizzes').textContent = quizzes;
     document.getElementById('mediaPontuacao').textContent = media;
@@ -126,9 +139,19 @@ function atualizarDashboard(leads) {
     document.getElementById('taxaConversao').textContent = taxa + '%';
     document.getElementById('sidebarLeads').textContent = total;
 
-    // Funil
-    const statusCount = { novo: 0, contactado: 0, reuniao_marcada: 0, proposta_enviada: 0, cliente: 0, perdido: 0 };
-    leads.forEach(l => { if (statusCount[l.status] !== undefined) statusCount[l.status]++; });
+    // Funil de Vendas
+    const statusCount = { 
+        novo: 0, 
+        contactado: 0, 
+        reuniao_marcada: 0, 
+        proposta_enviada: 0, 
+        cliente: 0, 
+        perdido: 0 
+    };
+    leads.forEach(l => {
+        if (statusCount[l.status] !== undefined) statusCount[l.status]++;
+    });
+    
     document.getElementById('fNovo').textContent = statusCount.novo;
     document.getElementById('fContactado').textContent = statusCount.contactado;
     document.getElementById('fReuniao').textContent = statusCount.reuniao_marcada;
@@ -150,6 +173,7 @@ function atualizarDashboard(leads) {
             countCats++;
         }
     });
+    
     if (countCats > 0) {
         document.getElementById('sPresenca').textContent = Math.round(cats.presencaDigital / countCats);
         document.getElementById('sGestao').textContent = Math.round(cats.gestao / countCats);
@@ -158,14 +182,21 @@ function atualizarDashboard(leads) {
         document.getElementById('sInteresse').textContent = Math.round(cats.interesse / countCats);
     }
 
-    // Serviços
-    const servMap = { 'Website profissional': 0, 'Sistema de gestão': 0, 'Automação': 0, 'IA': 0, 'Loja online': 0 };
+    // Serviços mais procurados
+    const servMap = { 
+        'Website profissional': 0, 
+        'Sistema de gestão': 0, 
+        'Automação': 0, 
+        'IA': 0, 
+        'Loja online': 0 
+    };
     leads.forEach(l => {
         const sol = getNecessidades(l).solucoes || [];
         sol.forEach(s => {
             if (servMap[s] !== undefined) servMap[s]++;
         });
     });
+    
     const maxServ = Math.max(...Object.values(servMap), 1);
     document.getElementById('servWebsite').textContent = servMap['Website profissional'];
     document.getElementById('servSistema').textContent = servMap['Sistema de gestão'];
@@ -173,6 +204,7 @@ function atualizarDashboard(leads) {
     document.getElementById('servIA').textContent = servMap['IA'];
     document.getElementById('servLoja').textContent = servMap['Loja online'];
     
+    // Atualizar barras dos serviços
     const fills = document.querySelectorAll('#servicosRank .rank-item .fill');
     if (fills.length >= 5) {
         fills[0].style.width = (servMap['Website profissional'] / maxServ * 100) + '%';
@@ -182,7 +214,7 @@ function atualizarDashboard(leads) {
         fills[4].style.width = (servMap['Loja online'] / maxServ * 100) + '%';
     }
 
-    // Últimos leads (5)
+    // Últimos leads
     const recent = leads.slice(-5).reverse();
     const container = document.getElementById('recentList');
     if (recent.length === 0) {
@@ -201,12 +233,15 @@ function atualizarDashboard(leads) {
         }).join('');
     }
 
-    // Dores frequentes
+    // Dores mais frequentes
     const dorMap = {};
     leads.forEach(l => {
         const dores = getNecessidades(l).dores || [];
-        dores.forEach(d => { dorMap[d] = (dorMap[d] || 0) + 1; });
+        dores.forEach(d => { 
+            dorMap[d] = (dorMap[d] || 0) + 1; 
+        });
     });
+    
     const sortedDores = Object.entries(dorMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
     const dorContainer = document.getElementById('doresFrequentes');
     if (sortedDores.length === 0) {
@@ -216,28 +251,28 @@ function atualizarDashboard(leads) {
             `<span class="tag-dor">${dor} <strong>${count}</strong></span>`
         ).join('');
     }
+    
+    console.log('✅ Dashboard atualizado!');
 }
 
 // ===== GRÁFICOS =====
 function atualizarGraficos(leads, period) {
     const filteredLeads = filtrarPorPeriodo(leads, period);
     
-    // Preparar dados para o gráfico
+    // Preparar dados
     const periodMap = {};
     const hoje = new Date();
     let labels = [];
     let valores = [];
-
-    // Determinar período
     let days = 7;
-    let format = 'day';
+    
     if (period === 'month') days = 30;
-    else if (period === 'year') { days = 12; format = 'month'; }
+    else if (period === 'year') days = 12;
 
     for (let i = days - 1; i >= 0; i--) {
         const d = new Date(hoje);
         let key, label;
-        if (format === 'month') {
+        if (period === 'year') {
             d.setMonth(d.getMonth() - i);
             key = d.toISOString().split('T')[0].slice(0, 7);
             label = d.toLocaleDateString('pt-MZ', { month: 'short', year: 'numeric' });
@@ -253,7 +288,7 @@ function atualizarGraficos(leads, period) {
 
     filteredLeads.forEach(l => {
         const d = new Date(l.data_cadastro);
-        let key = format === 'month' ? d.toISOString().split('T')[0].slice(0, 7) : d.toISOString().split('T')[0];
+        let key = period === 'year' ? d.toISOString().split('T')[0].slice(0, 7) : d.toISOString().split('T')[0];
         if (periodMap[key] !== undefined) {
             const idx = Object.keys(periodMap).indexOf(key);
             if (idx !== -1) valores[idx]++;
@@ -307,10 +342,27 @@ function atualizarGraficos(leads, period) {
 
     // Funil
     const statusColorsArray = ['#34d399', '#fbbf24', '#fb923c', '#a78bfa', '#34d399', '#f87171'];
-    const statusCount = { novo: 0, contactado: 0, reuniao_marcada: 0, proposta_enviada: 0, cliente: 0, perdido: 0 };
-    filteredLeads.forEach(l => { if (statusCount[l.status] !== undefined) statusCount[l.status]++; });
+    const statusCount = { 
+        novo: 0, 
+        contactado: 0, 
+        reuniao_marcada: 0, 
+        proposta_enviada: 0, 
+        cliente: 0, 
+        perdido: 0 
+    };
+    filteredLeads.forEach(l => { 
+        if (statusCount[l.status] !== undefined) statusCount[l.status]++; 
+    });
+    
     const statusLabels = ['Novos', 'Contactados', 'Reuniões', 'Propostas', 'Clientes', 'Perdidos'];
-    const statusData = [statusCount.novo, statusCount.contactado, statusCount.reuniao_marcada, statusCount.proposta_enviada, statusCount.cliente, statusCount.perdido];
+    const statusData = [
+        statusCount.novo, 
+        statusCount.contactado, 
+        statusCount.reuniao_marcada, 
+        statusCount.proposta_enviada, 
+        statusCount.cliente, 
+        statusCount.perdido
+    ];
 
     if (chartFunil) chartFunil.destroy();
     const ctx2 = document.getElementById('chartFunil');
@@ -370,6 +422,7 @@ function atualizarGraficos(leads, period) {
             countCats++;
         }
     });
+    
     const radarLabels = ['Presença', 'Gestão', 'Automação', 'Crescimento', 'Interesse'];
     const radarData = countCats > 0 ? [
         Math.round(cats.presencaDigital / countCats),
