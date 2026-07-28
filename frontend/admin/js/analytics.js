@@ -86,6 +86,70 @@ function atualizarAnalytics(leads) {
         }
     }
 
+    // Origens
+    const origMap = {};
+    leads.forEach(l => {
+        const o = getOrigem(l) || 'Direto';
+        origMap[o] = (origMap[o] || 0) + 1;
+    });
+    const sortedOrig = Object.entries(origMap).sort((a, b) => b[1] - a[1]);
+    
+    // Exibir origens em texto
+    const origContainer = document.getElementById('origens');
+    if (sortedOrig.length === 0 || (sortedOrig.length === 1 && sortedOrig[0][0] === 'Direto')) {
+        origContainer.innerHTML = '<span style="color:rgba(255,255,255,0.3);">Sem dados</span>';
+    } else {
+        origContainer.innerHTML = sortedOrig.map(([nome, count]) =>
+            `<span style="background:rgba(255,255,255,0.03); padding:0.2rem 0.6rem; border-radius:9999px; font-size:0.75rem; border:1px solid rgba(255,255,255,0.04);"><strong>${nome}</strong> ${count}</span>`
+        ).join('');
+    }
+
+    // Gráfico de Pizza - Origens
+    const origLabels = sortedOrig.map(s => s[0]);
+    const origData = sortedOrig.map(s => s[1]);
+    const origColors = ['#1877f2', '#e4405f', '#25D366', '#8B5CF6', '#34a853', '#fbbf24', '#f87171', '#6D28D9'];
+
+    if (chartOrigens) chartOrigens.destroy();
+    const ctx2 = document.getElementById('chartOrigens');
+    if (ctx2) {
+        if (origLabels.length === 0 || (origLabels.length === 1 && origLabels[0] === 'Direto')) {
+            chartOrigens = new Chart(ctx2, {
+                type: 'doughnut',
+                data: { labels: ['Sem dados'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.05)'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'rgba(255,255,255,0.3)' } } } }
+            });
+        } else {
+            chartOrigens = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: origLabels,
+                    datasets: [{
+                        data: origData,
+                        backgroundColor: origColors.slice(0, origLabels.length),
+                        borderColor: 'rgba(255,255,255,0.05)',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', font: { size: 10 }, padding: 10, usePointStyle: true } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percent = total ? Math.round((context.parsed / total) * 100) : 0;
+                                    return context.label + ': ' + context.parsed + ' (' + percent + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     // Leads por dia
     const dias = {};
     const hoje = new Date();
@@ -126,80 +190,6 @@ function atualizarAnalytics(leads) {
     const horas = Math.floor(avgMin / 60);
     const minutos = avgMin % 60;
     document.getElementById('tempoMedio').textContent = count ? `${horas}h ${minutos}min` : 'N/A';
-
-    // Origens
-    const origensReais = {};
-    leads.forEach(l => {
-        const origem = l.origem || 'Direto';
-        origensReais[origem] = (origensReais[origem] || 0) + 1;
-    });
-    
-    let origens = [];
-    if (Object.keys(origensReais).length === 0 || (Object.keys(origensReais).length === 1 && origensReais['Direto'])) {
-        origens = [
-            { label: 'Facebook', count: 0, color: '#1877f2' },
-            { label: 'Instagram', count: 0, color: '#e4405f' },
-            { label: 'WhatsApp', count: 0, color: '#25D366' },
-            { label: 'Indicação', count: 0, color: '#8B5CF6' },
-            { label: 'Google', count: 0, color: '#34a853' }
-        ];
-        document.getElementById('origens').innerHTML = '<span style="color:rgba(255,255,255,0.3);">Sem dados</span>';
-    } else {
-        origens = Object.entries(origensReais).map(([label, count]) => ({
-            label,
-            count,
-            color: ['#1877f2', '#e4405f', '#25D366', '#8B5CF6', '#34a853', '#fbbf24', '#f87171'][Math.floor(Math.random() * 7)]
-        }));
-        document.getElementById('origens').innerHTML = origens.map(o =>
-            `<span style="background:rgba(255,255,255,0.03); padding:0.2rem 0.6rem; border-radius:9999px; font-size:0.75rem; border:1px solid rgba(255,255,255,0.04);"><strong>${o.label}</strong> ${o.count}</span>`
-        ).join('');
-    }
-
-    // Gráfico Origens
-    const origLabels = origens.map(o => o.label);
-    const origData = origens.map(o => o.count);
-    const origColors = origens.map(o => o.color || '#8B5CF6');
-
-    if (chartOrigens) chartOrigens.destroy();
-    const ctx2 = document.getElementById('chartOrigens');
-    if (ctx2) {
-        if (origData.every(v => v === 0)) {
-            chartOrigens = new Chart(ctx2, {
-                type: 'doughnut',
-                data: { labels: ['Sem dados'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.05)'] }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'rgba(255,255,255,0.3)' } } } }
-            });
-        } else {
-            chartOrigens = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: origLabels,
-                    datasets: [{
-                        data: origData,
-                        backgroundColor: origColors,
-                        borderColor: 'rgba(255,255,255,0.05)',
-                        borderWidth: 2,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', font: { size: 10 }, padding: 10, usePointStyle: true } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percent = total ? Math.round((context.parsed / total) * 100) : 0;
-                                    return context.label + ': ' + context.parsed + ' (' + percent + '%)';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
 }
 
 // ===== INICIAR =====

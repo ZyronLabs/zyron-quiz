@@ -20,6 +20,7 @@ class LeadService {
     }
   }
 
+  // ===== MÉTODOS =====
   async getAllLeads() {
     if (this.usePostgres) {
       try {
@@ -57,7 +58,7 @@ class LeadService {
   }
 
   async createLead(leadData) {
-    const { cliente, status, comercial } = leadData;
+    const { cliente, status, comercial, origem } = leadData;
     const id = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     
     if (this.usePostgres) {
@@ -71,15 +72,16 @@ class LeadService {
           whatsapp: cliente.whatsapp,
           email: cliente.email,
           segmento: cliente.segmento || '',
+          origem: origem || 'Direto',
           prioridade: comercial?.prioridade || 'media',
           contactado: comercial?.contactado || false,
           observacoes: comercial?.observacoes || ''
         });
       } catch (error) {
-        return this.createLeadJSON({ cliente, status, comercial, id });
+        return this.createLeadJSON({ cliente, status, comercial, origem, id });
       }
     }
-    return this.createLeadJSON({ cliente, status, comercial, id });
+    return this.createLeadJSON({ cliente, status, comercial, origem, id });
   }
 
   createLeadJSON(data) {
@@ -89,6 +91,7 @@ class LeadService {
       status: data.status || 'novo',
       data_cadastro: new Date().toISOString(),
       cliente: data.cliente,
+      origem: data.origem || 'Direto',
       comercial: {
         prioridade: data.comercial?.prioridade || 'media',
         contactado: false,
@@ -174,6 +177,29 @@ class LeadService {
     return leads[index];
   }
 
+  async deleteLead(id) {
+    if (this.usePostgres) {
+      try {
+        const lead = await LeadModel.findOne({ where: { id } });
+        if (!lead) throw new Error('Lead não encontrado');
+        await lead.destroy();
+        return lead;
+      } catch (error) {
+        return this.deleteLeadJSON(id);
+      }
+    }
+    return this.deleteLeadJSON(id);
+  }
+
+  deleteLeadJSON(id) {
+    const leads = this.getAllLeadsJSON();
+    const index = leads.findIndex(l => l.id === id);
+    if (index === -1) throw new Error('Lead não encontrado');
+    const deleted = leads.splice(index, 1);
+    fs.writeFileSync(this.leadsPath, JSON.stringify(leads, null, 2));
+    return deleted[0];
+  }
+
   async filterLeads(filtros) {
     if (this.usePostgres) {
       try {
@@ -181,6 +207,7 @@ class LeadService {
         if (filtros.segmento) where.segmento = filtros.segmento;
         if (filtros.nivel) where.nivel = filtros.nivel;
         if (filtros.status) where.status = filtros.status;
+        if (filtros.origem) where.origem = filtros.origem;
         return await LeadModel.findAll({ where, order: [['data_cadastro', 'DESC']] });
       } catch (error) {
         return this.filterLeadsJSON(filtros);
@@ -200,6 +227,9 @@ class LeadService {
     if (filtros.status) {
       leads = leads.filter(l => l.status === filtros.status);
     }
+    if (filtros.origem) {
+      leads = leads.filter(l => l.origem === filtros.origem);
+    }
     return leads;
   }
 
@@ -210,7 +240,7 @@ class LeadService {
         const total = leads.length;
         const quizzesRealizados = leads.filter(l => l.pontuacao_total !== null).length;
         const pontuacoes = leads.filter(l => l.pontuacao_total !== null).map(l => l.pontuacao_total);
-        const mediaPontuacao = pontuacoes.length > 0 ? Math.round(pontuacoes.reduce((a,b) => a+b, 0) / pontuacoes.length) : 0;
+        const mediaPontuacao = pontuacoes.length > 0 ? Math.round(pontuacoes.reduce((a, b) => a + b, 0) / pontuacoes.length) : 0;
         const leadsInteressados = leads.filter(l => l.status === 'novo' && l.prioridade === 'alta').length;
         return { total, quizzesRealizados, mediaPontuacao, leadsInteressados };
       } catch (error) {

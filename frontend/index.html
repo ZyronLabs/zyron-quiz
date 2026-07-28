@@ -18,7 +18,6 @@
         <div class="container flex-between">
             <a href="/" class="logo">
                 <img src="./assets/logo.png" alt="Zyron Labs" style="height: 40px; width: auto;">
-                <span class="logo-text">Zyron Labs</span>
             </a>
             <div class="header-actions">
                 <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
@@ -78,6 +77,18 @@
                             <option value="Outro">Outro</option>
                         </select>
                     </div>
+                    <div class="input-with-icon">
+                        <i class="ph ph-arrow-circle-down ph-bold input-icon"></i>
+                        <select id="origem" required class="input-zyron">
+                            <option value="">Como nos conheceu?</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Google">Google</option>
+                            <option value="Indicação">Indicação</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
                     
                     <button type="submit" id="btnSubmit" class="btn-primary w-full">
                         <i class="ph ph-arrow-right ph-bold"></i> Começar Diagnóstico
@@ -91,7 +102,7 @@
     </main>
 
     <script>
-        const API_URL = "https://zyron-quiz.onrender.com/api";
+        const API_URL = 'https://zyron-quiz.onrender.com/api';
         
         // ===== THEME TOGGLE =====
         function toggleTheme() {
@@ -135,8 +146,9 @@
             const whatsapp = document.getElementById('whatsapp').value;
             const email = document.getElementById('email').value;
             const segmento = document.getElementById('segmento').value;
+            const origem = document.getElementById('origem').value;
             
-            if (!nome || !whatsapp || !email || !segmento) {
+            if (!nome || !whatsapp || !email || !segmento || !origem) {
                 alert('Por favor, preencha todos os campos obrigatórios.');
                 return;
             }
@@ -152,7 +164,7 @@
                 const response = await fetch(`${API_URL}/leads`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, empresa, whatsapp, email, segmento })
+                    body: JSON.stringify({ nome, empresa, whatsapp, email, segmento, origem })
                 });
                 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);

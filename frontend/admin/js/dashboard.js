@@ -72,7 +72,6 @@ function atualizarDashboard(leads) {
         return acc;
     }, 0);
 
-    // Atualizar métricas
     document.getElementById('totalLeads').textContent = total;
     document.getElementById('totalQuizzes').textContent = quizzes;
     document.getElementById('mediaPontuacao').textContent = media;

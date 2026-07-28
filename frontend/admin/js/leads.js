@@ -75,6 +75,7 @@ async function abrirDetalhes(leadId) {
         const empresa = getEmpresa(lead);
         const whatsapp = getWhatsapp(lead);
         const segmento = getSegmento(lead);
+        const origem = getOrigem(lead);
         const pontuacao = getPontuacao(lead);
         const nivel = getNivel(lead);
         const sol = getNecessidades(lead).solucoes || [];
@@ -93,6 +94,7 @@ async function abrirDetalhes(leadId) {
                 <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">WhatsApp</span><br><span style="font-weight:500;"><i class="ph ph-whatsapp-logo ph-bold" style="color:#25D366;"></i> ${whatsapp || 'N/A'}</span></div>
                 <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Email</span><br><span style="font-weight:500;"><i class="ph ph-envelope ph-bold"></i> ${lead.email || 'N/A'}</span></div>
                 <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Segmento</span><br><span style="font-weight:500;"><i class="ph ph-tag ph-bold"></i> ${segmento || 'N/A'}</span></div>
+                <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Origem</span><br><span style="font-weight:500;"><i class="ph ph-arrow-circle-down ph-bold"></i> ${origem || 'Direto'}</span></div>
                 <div><span style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Data</span><br><span style="font-weight:500;"><i class="ph ph-calendar ph-bold"></i> ${new Date(lead.data_cadastro).toLocaleString('pt-MZ')}</span></div>
             </div>
             <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:0.5rem; margin-bottom:1rem;">
@@ -128,6 +130,9 @@ async function abrirDetalhes(leadId) {
                         <i class="ph ph-whatsapp-logo ph-bold"></i>
                     </a>
                 ` : ''}
+                <button onclick="deletarLead('${lead.id}')" class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.75rem;">
+                    <i class="ph ph-trash ph-bold"></i> Remover
+                </button>
                 <button onclick="fecharModal()" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.75rem;">
                     <i class="ph ph-x ph-bold"></i> Fechar
                 </button>
@@ -170,6 +175,29 @@ async function atualizarStatus(leadId, novoStatus) {
     }
 }
 
+// ===== DELETAR LEAD =====
+async function deletarLead(leadId) {
+    if (!confirm('⚠️ ATENÇÃO: Isso vai REMOVER este lead permanentemente. Continuar?')) {
+        return;
+    }
+    try {
+        const res = await fetch(`${API_URL}/leads/${leadId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            alert('✅ Lead removido com sucesso!');
+            fecharModal();
+            carregarLeads();
+        } else {
+            const data = await res.json();
+            alert('❌ Erro: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    }
+}
+
 // ===== FILTROS =====
 function aplicarFiltros() {
     const filtros = {
@@ -196,7 +224,7 @@ function filtrarStatus(status) {
 // ===== EXPORTAR CSV =====
 function exportarCSV() {
     if (!leadsAtuais.length) { alert('Nenhum lead para exportar.'); return; }
-    const headers = ['Nome', 'Empresa', 'WhatsApp', 'Email', 'Segmento', 'Pontuação', 'Nível', 'Interesse', 'Status'];
+    const headers = ['Nome', 'Empresa', 'WhatsApp', 'Email', 'Segmento', 'Origem', 'Pontuação', 'Nível', 'Interesse', 'Status'];
     const rows = leadsAtuais.map(l => {
         const sol = getNecessidades(l).solucoes || [];
         return [
@@ -205,6 +233,7 @@ function exportarCSV() {
             getWhatsapp(l),
             l.email || '',
             getSegmento(l),
+            getOrigem(l),
             getPontuacao(l),
             getNivel(l),
             sol.join('; '),

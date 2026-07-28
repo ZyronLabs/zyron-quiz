@@ -8,11 +8,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="dark-theme" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-    <!-- Glow Orbs -->
     <div class="glow-orbe glow-orbe-1"></div>
     <div class="glow-orbe glow-orbe-2"></div>
 
-    <!-- Login Card -->
+    <div class="glass-card w-full max-w-md p-8 mx-4">
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center mb-4">
+                <img src="../assets/logo.png" alt="Zyron Labs" style="height: 60px; width: auto;">
+            </div>
+            <h2 class="text-2xl font-bold"><i class="ph ph-lock ph-bold ph-primary"></i> Acesso Administrativo</h2>
+            <p class="text-white-50 text-sm">Entre com suas credenciais</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="text-white-70 text-sm block mb-1"><i class="ph ph-envelope ph-bold"></i> Email</label>
+                <input type="email" id="email" value="admin@zyronlabs.com" class="input-zyron" required>cat > frontend/admin/login.html << 'EOF'
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Zyron Labs</title>
+    <link href="../styles/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div class="glow-orbe glow-orbe-1"></div>
+    <div class="glow-orbe glow-orbe-2"></div>
+
     <div class="glass-card w-full max-w-md p-8 mx-4">
         <div class="text-center mb-8">
             <div class="flex items-center justify-center mb-4">
@@ -29,24 +53,22 @@
             </div>
             <div>
                 <label class="text-white-70 text-sm block mb-1"><i class="ph ph-key ph-bold"></i> Senha</label>
-                <input type="password" id="password" class="input-zyron" required>
+                <input type="password" id="password" value="Zyron2026" class="input-zyron" required>
             </div>
-            <button type="submit" class="btn-primary w-full">
-                <i class="ph ph-arrow-right ph-bold"></i> Entrar
-            </button>
+            <button type="submit" class="btn-primary w-full"><i class="ph ph-arrow-right ph-bold"></i> Entrar</button>
         </form>
-        
+
+        <div id="errorMessage" class="mt-4 text-red-400 text-sm text-center hidden"><i class="ph ph-warning ph-bold"></i> Credenciais inválidas. Tente novamente.</div>
+        <div class="mt-6 text-center text-white-30 text-xs"><p><i class="ph ph-info ph-bold"></i> Credenciais: admin@zyronlabs.com / Zyron2026</p></div>
     </div>
 
     <script>
-        const API_URL = "https://zyron-quiz.onrender.com/api";
-        
+        const API_URL = 'https://zyron-quiz.onrender.com/api';
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorEl = document.getElementById('errorMessage');
-            
             try {
                 const response = await fetch(`${API_URL}/admin/login`, {
                     method: 'POST',

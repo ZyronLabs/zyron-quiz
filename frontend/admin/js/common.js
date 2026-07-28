@@ -68,6 +68,10 @@ function getSegmento(lead) {
     return lead.segmento || lead.cliente?.segmento || '';
 }
 
+function getOrigem(lead) {
+    return lead.origem || 'Direto';
+}
+
 function getPontuacao(lead) {
     if (lead.pontuacao_total !== undefined && lead.pontuacao_total !== null) return lead.pontuacao_total;
     if (lead.diagnostico?.pontuacao_total !== undefined) return lead.diagnostico.pontuacao_total;
