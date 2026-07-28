@@ -2,46 +2,32 @@ const API_URL = 'https://zyron-quiz.onrender.com/api';
 let leadsAtuais = [];
 
 // ===== FUNÇÕES AUXILIARES =====
-function getLeadNome(lead) {
-    if (lead.nome) return lead.nome;
-    if (lead.cliente && lead.cliente.nome) return lead.cliente.nome;
-    return 'N/A';
+function getNome(lead) {
+    return lead.nome || lead.cliente?.nome || 'N/A';
 }
 
-function getLeadEmpresa(lead) {
-    if (lead.empresa) return lead.empresa;
-    if (lead.cliente && lead.cliente.empresa) return lead.cliente.empresa;
-    return '';
+function getEmpresa(lead) {
+    return lead.empresa || lead.cliente?.empresa || '';
 }
 
-function getLeadWhatsapp(lead) {
-    if (lead.whatsapp) return lead.whatsapp;
-    if (lead.cliente && lead.cliente.whatsapp) return lead.cliente.whatsapp;
-    return '';
+function getWhatsapp(lead) {
+    return lead.whatsapp || lead.cliente?.whatsapp || '';
 }
 
-function getLeadSegmento(lead) {
-    if (lead.segmento) return lead.segmento;
-    if (lead.cliente && lead.cliente.segmento) return lead.cliente.segmento;
-    return '';
+function getSegmento(lead) {
+    return lead.segmento || lead.cliente?.segmento || '';
 }
 
-function getLeadPontuacao(lead) {
-    if (lead.pontuacao_total !== undefined && lead.pontuacao_total !== null) return lead.pontuacao_total;
-    if (lead.diagnostico && lead.diagnostico.pontuacao_total !== undefined) return lead.diagnostico.pontuacao_total;
-    return 0;
+function getPontuacao(lead) {
+    return lead.pontuacao_total || lead.diagnostico?.pontuacao_total || 0;
 }
 
-function getLeadNivel(lead) {
-    if (lead.nivel) return lead.nivel;
-    if (lead.diagnostico && lead.diagnostico.nivel) return lead.diagnostico.nivel;
-    return 'N/A';
+function getNivel(lead) {
+    return lead.nivel || lead.diagnostico?.nivel || 'N/A';
 }
 
-function getLeadNecessidades(lead) {
-    if (lead.necessidades) return lead.necessidades;
-    if (lead.diagnostico && lead.diagnostico.necessidades) return lead.diagnostico.necessidades;
-    return { dores: [], solucoes: [] };
+function getNecessidades(lead) {
+    return lead.necessidades || lead.diagnostico?.necessidades || { dores: [], solucoes: [] };
 }
 
 const statusClasses = {
@@ -89,13 +75,13 @@ function renderizarLeads(leads) {
     
     const nivelEmoji = { 'Inicial': '🔴', 'Intermediário': '🟡', 'Avançado': '🟢' };
     container.innerHTML = leads.map(l => {
-        const sol = getLeadNecessidades(l).solucoes || [];
-        const nome = getLeadNome(l);
-        const empresa = getLeadEmpresa(l);
-        const whatsapp = getLeadWhatsapp(l);
-        const segmento = getLeadSegmento(l);
-        const pontuacao = getLeadPontuacao(l);
-        const nivel = getLeadNivel(l);
+        const sol = getNecessidades(l).solucoes || [];
+        const nome = getNome(l);
+        const empresa = getEmpresa(l);
+        const whatsapp = getWhatsapp(l);
+        const segmento = getSegmento(l);
+        const pontuacao = getPontuacao(l);
+        const nivel = getNivel(l);
         const status = l.status || 'novo';
         
         return `
@@ -130,14 +116,14 @@ async function abrirDetalhes(leadId) {
         const modal = document.getElementById('modalDetalhes');
         const content = document.getElementById('modalContent');
         
-        const nome = getLeadNome(lead);
-        const empresa = getLeadEmpresa(lead);
-        const whatsapp = getLeadWhatsapp(lead);
-        const segmento = getLeadSegmento(lead);
-        const pontuacao = getLeadPontuacao(lead);
-        const nivel = getLeadNivel(lead);
-        const sol = getLeadNecessidades(lead).solucoes || [];
-        const dores = getLeadNecessidades(lead).dores || [];
+        const nome = getNome(lead);
+        const empresa = getEmpresa(lead);
+        const whatsapp = getWhatsapp(lead);
+        const segmento = getSegmento(lead);
+        const pontuacao = getPontuacao(lead);
+        const nivel = getNivel(lead);
+        const sol = getNecessidades(lead).solucoes || [];
+        const dores = getNecessidades(lead).dores || [];
         const status = lead.status || 'novo';
         const nivelEmoji = { 'Inicial': '🔴', 'Intermediário': '🟡', 'Avançado': '🟢' };
 
@@ -258,15 +244,15 @@ function exportarCSV() {
     if (!leadsAtuais.length) { alert('Nenhum lead para exportar.'); return; }
     const headers = ['Nome', 'Empresa', 'WhatsApp', 'Email', 'Segmento', 'Pontuação', 'Nível', 'Interesse', 'Status'];
     const rows = leadsAtuais.map(l => {
-        const sol = getLeadNecessidades(l).solucoes || [];
+        const sol = getNecessidades(l).solucoes || [];
         return [
-            getLeadNome(l),
-            getLeadEmpresa(l),
-            getLeadWhatsapp(l),
+            getNome(l),
+            getEmpresa(l),
+            getWhatsapp(l),
             l.email || '',
-            getLeadSegmento(l),
-            getLeadPontuacao(l),
-            getLeadNivel(l),
+            getSegmento(l),
+            getPontuacao(l),
+            getNivel(l),
             sol.join('; '),
             l.status || ''
         ];

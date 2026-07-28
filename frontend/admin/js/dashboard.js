@@ -14,7 +14,6 @@ async function carregarDados() {
         const data = await res.json();
         console.log('📊 Dados recebidos:', data);
         
-        // Verificar se os leads estão no formato correto
         if (data.leads) {
             allLeads = data.leads;
         } else if (Array.isArray(data)) {
@@ -24,66 +23,58 @@ async function carregarDados() {
         }
         
         console.log(`✅ ${allLeads.length} leads carregados`);
+        
+        // Atualizar tudo
         atualizarDashboard(allLeads);
         atualizarGraficos(allLeads, currentPeriod);
     } catch (error) {
         console.error('❌ Erro ao carregar dados:', error);
+        // Mostrar zeros
+        document.getElementById('totalLeads').textContent = '0';
+        document.getElementById('totalQuizzes').textContent = '0';
+        document.getElementById('mediaPontuacao').textContent = '0';
+        document.getElementById('leadsPrioritarios').textContent = '0';
+        document.getElementById('receitaPotencial').textContent = '0 MZN';
+        document.getElementById('taxaConversao').textContent = '0%';
+        document.getElementById('sidebarLeads').textContent = '0';
     }
 }
 
-// ===== FUNÇÃO PARA OBTER NOME DO LEAD (compatível com ambos formatos) =====
-function getLeadNome(lead) {
-    if (lead.nome) return lead.nome;
-    if (lead.cliente && lead.cliente.nome) return lead.cliente.nome;
-    return 'N/A';
+// ===== FUNÇÕES AUXILIARES =====
+function getNome(lead) {
+    return lead.nome || lead.cliente?.nome || 'N/A';
 }
 
-function getLeadEmpresa(lead) {
-    if (lead.empresa) return lead.empresa;
-    if (lead.cliente && lead.cliente.empresa) return lead.cliente.empresa;
-    return '';
+function getEmpresa(lead) {
+    return lead.empresa || lead.cliente?.empresa || '';
 }
 
-function getLeadWhatsapp(lead) {
-    if (lead.whatsapp) return lead.whatsapp;
-    if (lead.cliente && lead.cliente.whatsapp) return lead.cliente.whatsapp;
-    return '';
+function getWhatsapp(lead) {
+    return lead.whatsapp || lead.cliente?.whatsapp || '';
 }
 
-function getLeadSegmento(lead) {
-    if (lead.segmento) return lead.segmento;
-    if (lead.cliente && lead.cliente.segmento) return lead.cliente.segmento;
-    return '';
+function getSegmento(lead) {
+    return lead.segmento || lead.cliente?.segmento || '';
 }
 
-function getLeadPontuacao(lead) {
-    if (lead.pontuacao_total !== undefined && lead.pontuacao_total !== null) return lead.pontuacao_total;
-    if (lead.diagnostico && lead.diagnostico.pontuacao_total !== undefined) return lead.diagnostico.pontuacao_total;
-    return 0;
+function getPontuacao(lead) {
+    return lead.pontuacao_total || lead.diagnostico?.pontuacao_total || 0;
 }
 
-function getLeadNivel(lead) {
-    if (lead.nivel) return lead.nivel;
-    if (lead.diagnostico && lead.diagnostico.nivel) return lead.diagnostico.nivel;
-    return 'N/A';
+function getNivel(lead) {
+    return lead.nivel || lead.diagnostico?.nivel || 'N/A';
 }
 
-function getLeadCategorias(lead) {
-    if (lead.categorias) return lead.categorias;
-    if (lead.diagnostico && lead.diagnostico.categorias) return lead.diagnostico.categorias;
-    return null;
+function getCategorias(lead) {
+    return lead.categorias || lead.diagnostico?.categorias || null;
 }
 
-function getLeadNecessidades(lead) {
-    if (lead.necessidades) return lead.necessidades;
-    if (lead.diagnostico && lead.diagnostico.necessidades) return lead.diagnostico.necessidades;
-    return { dores: [], solucoes: [] };
+function getNecessidades(lead) {
+    return lead.necessidades || lead.diagnostico?.necessidades || { dores: [], solucoes: [] };
 }
 
-function getLeadPrioridade(lead) {
-    if (lead.prioridade) return lead.prioridade;
-    if (lead.comercial && lead.comercial.prioridade) return lead.comercial.prioridade;
-    return 'media';
+function getPrioridade(lead) {
+    return lead.prioridade || lead.comercial?.prioridade || 'media';
 }
 
 // ===== SET PERIOD =====
@@ -100,17 +91,10 @@ function filtrarPorPeriodo(leads, period) {
     let cutoff = new Date(now);
     
     switch(period) {
-        case 'week':
-            cutoff.setDate(now.getDate() - 7);
-            break;
-        case 'month':
-            cutoff.setMonth(now.getMonth() - 1);
-            break;
-        case 'year':
-            cutoff.setFullYear(now.getFullYear() - 1);
-            break;
-        default:
-            cutoff.setDate(now.getDate() - 7);
+        case 'week': cutoff.setDate(now.getDate() - 7); break;
+        case 'month': cutoff.setMonth(now.getMonth() - 1); break;
+        case 'year': cutoff.setFullYear(now.getFullYear() - 1); break;
+        default: cutoff.setDate(now.getDate() - 7);
     }
     
     return leads.filter(l => new Date(l.data_cadastro) >= cutoff);
@@ -119,20 +103,21 @@ function filtrarPorPeriodo(leads, period) {
 // ===== ATUALIZAR DASHBOARD =====
 function atualizarDashboard(leads) {
     const total = leads.length;
-    const quizzes = leads.filter(l => getLeadPontuacao(l) > 0).length;
-    const pontuacoes = leads.map(l => getLeadPontuacao(l));
+    const quizzes = leads.filter(l => getPontuacao(l) > 0).length;
+    const pontuacoes = leads.map(l => getPontuacao(l));
     const media = pontuacoes.length ? Math.round(pontuacoes.reduce((a, b) => a + b, 0) / pontuacoes.length) : 0;
-    const prioritarios = leads.filter(l => getLeadPrioridade(l) === 'alta' || getLeadPontuacao(l) > 80).length;
+    const prioritarios = leads.filter(l => getPrioridade(l) === 'alta' || getPontuacao(l) > 80).length;
     const clientes = leads.filter(l => l.status === 'cliente').length;
     const taxa = total ? Math.round((clientes / total) * 100) : 0;
     const receita = leads.reduce((acc, l) => {
-        const score = getLeadPontuacao(l);
+        const score = getPontuacao(l);
         if (score > 70) acc += 50000;
         else if (score > 40) acc += 25000;
         else acc += 10000;
         return acc;
     }, 0);
 
+    // Atualizar elementos
     document.getElementById('totalLeads').textContent = total;
     document.getElementById('totalQuizzes').textContent = quizzes;
     document.getElementById('mediaPontuacao').textContent = media;
@@ -155,7 +140,7 @@ function atualizarDashboard(leads) {
     const cats = { presencaDigital: 0, gestao: 0, automacao: 0, crescimento: 0, interesse: 0 };
     let countCats = 0;
     leads.forEach(l => {
-        const c = getLeadCategorias(l);
+        const c = getCategorias(l);
         if (c) {
             cats.presencaDigital += c.presencaDigital || 0;
             cats.gestao += c.gestao || 0;
@@ -176,7 +161,7 @@ function atualizarDashboard(leads) {
     // Serviços
     const servMap = { 'Website profissional': 0, 'Sistema de gestão': 0, 'Automação': 0, 'IA': 0, 'Loja online': 0 };
     leads.forEach(l => {
-        const sol = getLeadNecessidades(l).solucoes || [];
+        const sol = getNecessidades(l).solucoes || [];
         sol.forEach(s => {
             if (servMap[s] !== undefined) servMap[s]++;
         });
@@ -205,11 +190,11 @@ function atualizarDashboard(leads) {
     } else {
         container.innerHTML = recent.map(l => {
             const tempo = timeAgo(new Date(l.data_cadastro));
-            const score = getLeadPontuacao(l);
-            const sol = (getLeadNecessidades(l).solucoes || [])[0] || '';
+            const score = getPontuacao(l);
+            const sol = (getNecessidades(l).solucoes || [])[0] || '';
             return `<div class="recent-item">
                         <span class="time">${tempo}</span>
-                        <span class="name">${getLeadNome(l)}</span>
+                        <span class="name">${getNome(l)}</span>
                         <span class="score">${score} pts</span>
                         ${sol ? `<span class="tag">${sol}</span>` : ''}
                     </div>`;
@@ -219,7 +204,7 @@ function atualizarDashboard(leads) {
     // Dores frequentes
     const dorMap = {};
     leads.forEach(l => {
-        const dores = getLeadNecessidades(l).dores || [];
+        const dores = getNecessidades(l).dores || [];
         dores.forEach(d => { dorMap[d] = (dorMap[d] || 0) + 1; });
     });
     const sortedDores = Object.entries(dorMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
@@ -237,72 +222,45 @@ function atualizarDashboard(leads) {
 function atualizarGraficos(leads, period) {
     const filteredLeads = filtrarPorPeriodo(leads, period);
     
-    // 1. Leads por período
+    // Preparar dados para o gráfico
     const periodMap = {};
     const hoje = new Date();
     let labels = [];
     let valores = [];
 
-    switch(period) {
-        case 'week':
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date(hoje);
-                d.setDate(d.getDate() - i);
-                const key = d.toISOString().split('T')[0];
-                const label = d.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' });
-                periodMap[key] = 0;
-                labels.push(label);
-                valores.push(0);
-            }
-            break;
-        case 'month':
-            for (let i = 29; i >= 0; i--) {
-                const d = new Date(hoje);
-                d.setDate(d.getDate() - i);
-                const key = d.toISOString().split('T')[0];
-                const label = d.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' });
-                periodMap[key] = 0;
-                labels.push(label);
-                valores.push(0);
-            }
-            break;
-        case 'year':
-            for (let i = 11; i >= 0; i--) {
-                const d = new Date(hoje);
-                d.setMonth(d.getMonth() - i);
-                const key = d.toISOString().split('T')[0].slice(0, 7);
-                const label = d.toLocaleDateString('pt-MZ', { month: 'short', year: 'numeric' });
-                periodMap[key] = 0;
-                labels.push(label);
-                valores.push(0);
-            }
-            break;
-        default:
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date(hoje);
-                d.setDate(d.getDate() - i);
-                const key = d.toISOString().split('T')[0];
-                const label = d.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' });
-                periodMap[key] = 0;
-                labels.push(label);
-                valores.push(0);
-            }
+    // Determinar período
+    let days = 7;
+    let format = 'day';
+    if (period === 'month') days = 30;
+    else if (period === 'year') { days = 12; format = 'month'; }
+
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(hoje);
+        let key, label;
+        if (format === 'month') {
+            d.setMonth(d.getMonth() - i);
+            key = d.toISOString().split('T')[0].slice(0, 7);
+            label = d.toLocaleDateString('pt-MZ', { month: 'short', year: 'numeric' });
+        } else {
+            d.setDate(d.getDate() - i);
+            key = d.toISOString().split('T')[0];
+            label = d.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' });
+        }
+        periodMap[key] = 0;
+        labels.push(label);
+        valores.push(0);
     }
 
     filteredLeads.forEach(l => {
         const d = new Date(l.data_cadastro);
-        let key;
-        if (period === 'year') {
-            key = d.toISOString().split('T')[0].slice(0, 7);
-        } else {
-            key = d.toISOString().split('T')[0];
-        }
+        let key = format === 'month' ? d.toISOString().split('T')[0].slice(0, 7) : d.toISOString().split('T')[0];
         if (periodMap[key] !== undefined) {
             const idx = Object.keys(periodMap).indexOf(key);
             if (idx !== -1) valores[idx]++;
         }
     });
 
+    // Gráfico de barras
     if (chartLeadsPeriodo) chartLeadsPeriodo.destroy();
     const ctx1 = document.getElementById('chartLeadsPeriodo');
     if (ctx1) {
@@ -347,7 +305,7 @@ function atualizarGraficos(leads, period) {
         });
     }
 
-    // 2. Funil de Vendas
+    // Funil
     const statusColorsArray = ['#34d399', '#fbbf24', '#fb923c', '#a78bfa', '#34d399', '#f87171'];
     const statusCount = { novo: 0, contactado: 0, reuniao_marcada: 0, proposta_enviada: 0, cliente: 0, perdido: 0 };
     filteredLeads.forEach(l => { if (statusCount[l.status] !== undefined) statusCount[l.status]++; });
@@ -398,11 +356,11 @@ function atualizarGraficos(leads, period) {
         });
     }
 
-    // 3. Radar
+    // Radar
     const cats = { presencaDigital: 0, gestao: 0, automacao: 0, crescimento: 0, interesse: 0 };
     let countCats = 0;
     filteredLeads.forEach(l => {
-        const c = getLeadCategorias(l);
+        const c = getCategorias(l);
         if (c) {
             cats.presencaDigital += c.presencaDigital || 0;
             cats.gestao += c.gestao || 0;
