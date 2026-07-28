@@ -1,52 +1,8 @@
-const API_URL = 'https://zyron-quiz.onrender.com/api';
+/* ========================================
+   LEADS SCRIPT
+   ======================================== */
+
 let leadsAtuais = [];
-
-// ===== FUNÇÕES AUXILIARES =====
-function getNome(lead) {
-    return lead.nome || lead.cliente?.nome || 'N/A';
-}
-
-function getEmpresa(lead) {
-    return lead.empresa || lead.cliente?.empresa || '';
-}
-
-function getWhatsapp(lead) {
-    return lead.whatsapp || lead.cliente?.whatsapp || '';
-}
-
-function getSegmento(lead) {
-    return lead.segmento || lead.cliente?.segmento || '';
-}
-
-function getPontuacao(lead) {
-    return lead.pontuacao_total || lead.diagnostico?.pontuacao_total || 0;
-}
-
-function getNivel(lead) {
-    return lead.nivel || lead.diagnostico?.nivel || 'N/A';
-}
-
-function getNecessidades(lead) {
-    return lead.necessidades || lead.diagnostico?.necessidades || { dores: [], solucoes: [] };
-}
-
-const statusClasses = {
-    'novo': 'status-novo',
-    'contactado': 'status-contactado',
-    'reuniao_marcada': 'status-reuniao',
-    'proposta_enviada': 'status-proposta',
-    'cliente': 'status-cliente',
-    'perdido': 'status-perdido'
-};
-
-const statusLabels = {
-    'novo': '🟢 Novo',
-    'contactado': '🟡 Contactado',
-    'reuniao_marcada': '🟠 Reunião',
-    'proposta_enviada': '🟣 Proposta',
-    'cliente': '✅ Cliente',
-    'perdido': '❌ Perdido'
-};
 
 // ===== CARREGAR LEADS =====
 async function carregarLeads(filtros = {}) {
@@ -73,7 +29,6 @@ function renderizarLeads(leads) {
     }
     no.style.display = 'none';
     
-    const nivelEmoji = { 'Inicial': '🔴', 'Intermediário': '🟡', 'Avançado': '🟢' };
     container.innerHTML = leads.map(l => {
         const sol = getNecessidades(l).solucoes || [];
         const nome = getNome(l);
@@ -125,7 +80,6 @@ async function abrirDetalhes(leadId) {
         const sol = getNecessidades(lead).solucoes || [];
         const dores = getNecessidades(lead).dores || [];
         const status = lead.status || 'novo';
-        const nivelEmoji = { 'Inicial': '🔴', 'Intermediário': '🟡', 'Avançado': '🟢' };
 
         content.innerHTML = `
             <div style="margin-bottom:1rem;">
